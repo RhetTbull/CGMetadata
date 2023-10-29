@@ -49,51 +49,6 @@ class MetadataError(Exception):
     pass
 
 
-class ImageMetadata:
-    """Read and write image metadata using native macOS APIs."""
-
-    def __init__(self, filepath: FilePath):
-        self.filepath = filepath
-
-    @property
-    def properties(self):
-        """Return the metadata properties dictionary from the image.
-
-        The dictionary keys are named '{IPTC}', '{TIFF}', etc.
-        Reference: https://developer.apple.com/documentation/imageio/image_properties?language=objc
-        for more information.
-
-        This function is useful for retrieving EXIF and IPTC metadata.
-        See also get_image_xmp_metadata() for XMP metadata.
-        """
-        properties = load_image_properties(self.filepath)
-
-        # change keys to remove the leading '{' and trailing '}'
-        # e.g. '{IPTC}' -> 'IPTC' but only if the key starts with '{'
-        # also change Exif -> EXIF to match the other keys
-        properties = {
-            key[1:-1] if key.startswith("{") else key: value
-            for key, value in properties.items()
-        }
-        if "Exif" in properties:
-            properties["EXIF"] = properties.pop("Exif")
-        return properties
-
-    @property
-    def metadata(self):
-        """Get the XMP metadata dictionary for the image.
-
-        The dictionary keys are in form "prefix:name", e.g. "dc:creator".
-        """
-        return load_image_metadata(self.filepath)
-
-    @property
-    def xmp(self):
-        """Return the serialized XMP metadata for the image."""
-        metadata_ref = load_image_metadata_ref(self.filepath)
-        return metadata_ref_create_xmp(metadata_ref)
-
-
 def load_image_properties(
     image_path: FilePath,
 ) -> dict[str, Any]:

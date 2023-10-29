@@ -9,8 +9,8 @@ Video formats are not currently supported.
 ## Synopsis
 
 ```pycon
->>> from cgmetadata import ImageMetadata
->>> md = ImageMetadata("IMG_1997.HEIC")
+>>> from cgmetadata import ImageProperties
+>>> md = ImageProperties("IMG_1997.HEIC")
 >>> md.properties
 ...
 >>> md.metadata
