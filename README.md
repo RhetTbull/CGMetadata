@@ -6,6 +6,8 @@ CGMetadata is a Python wrapper around the macOS ImageIO and Core Graphics framew
 
 Video formats are not currently supported.
 
+>*Note*: This is a work in progress and not yet ready for use.
+
 ## Synopsis
 
 ```pycon
