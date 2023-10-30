@@ -9,8 +9,7 @@ This project uses [Flit](https://flit.readthedocs.io/en/latest/).  It is a simpl
 ## Installing
 
 - Create a virtual environment and activate it
-- `pip install -r dev_requirements.txt`
-- `pip install requirements.txt`
+- `pip install flit`
 - `flit install`
 
 ## Testing
