@@ -8,7 +8,6 @@ Implementation Note: Core Foundation objects created with Create or Copy functio
 this is done with `del Object` in pyobjc.
 """
 
-
 from __future__ import annotations
 
 from typing import Any
@@ -19,6 +18,7 @@ from CoreFoundation import (
     CFArrayGetCount,
     CFArrayGetTypeID,
     CFArrayGetValueAtIndex,
+    CFDictionaryCreate,
     CFDictionaryGetTypeID,
     CFDictionaryRef,
     CFGetTypeID,
@@ -58,6 +58,7 @@ def load_image_properties(
 
     Returns:
         A CFDictionary dictionary of metadata properties from the image file.
+        If the image does not contain metadata, an empty CFDictionary is returned.
 
     Note:
         The dictionary keys are named '{IPTC}', '{TIFF}', etc.
@@ -72,7 +73,7 @@ def load_image_properties(
 
         metadata = Quartz.CGImageSourceCopyPropertiesAtIndex(image_source, 0, None)
         del image_source
-        return metadata
+        return metadata or CFDictionaryCreate(None, [], [], 0, None, None)
 
 
 def load_image_properties_dict(
@@ -110,7 +111,7 @@ def load_image_metadata_dict(
         The dictionary keys are in form "prefix:name", e.g. "dc:creator".
     """
     metadata = load_image_metadata_ref(str(image_path))
-    return metadata_dictionary_from_image_metadata_ref(metadata)
+    return metadata_dictionary_from_image_metadata_ref(metadata) if metadata else {}
 
 
 def load_image_metadata_ref(
@@ -123,6 +124,7 @@ def load_image_metadata_ref(
 
     Returns:
         A Quartz.CGImageMetadataRef containing the XMP metadata.
+        If the image does not contain metadata, an empty Quartz.CGImageMetadataRef is returned.
     """
     with objc.autorelease_pool():
         image_url = NSURL.fileURLWithPath_(str(image_path))
@@ -130,7 +132,7 @@ def load_image_metadata_ref(
 
         metadata = Quartz.CGImageSourceCopyMetadataAtIndex(image_source, 0, None)
         del image_source
-    return metadata
+    return metadata or Quartz.CGImageMetadataCreateMutable()
 
 
 # def load_image_auxilary_data(image_path: FilePath) -> CFDictionaryRef:
@@ -190,10 +192,10 @@ def metadata_ref_serialize_xmp(metadata_ref: Quartz.CGImageMetadataRef) -> bytes
     with objc.autorelease_pool():
         data = Quartz.CGImageMetadataCreateXMPData(metadata_ref, None)
         if not data:
-            raise MetadataError("Could not create XMP data")
+            return b""
         xmp = bytes(data)
         del data
-        return bytes(xmp)
+        return xmp
 
 
 def metadata_ref_create_from_xmp(xmp: bytes) -> Quartz.CGImageMetadataRef:
@@ -344,11 +346,13 @@ def NSArray_to_list_recursive(ns_array: NSArray) -> list[Any]:
     return py_list
 
 
-def metadata_dictionary_from_image_metadata_ref(metadata_ref):
+def metadata_dictionary_from_image_metadata_ref(
+    metadata_ref: Quartz.CGImageMetadataRef,
+) -> dict[str, Any]:
     with objc.autorelease_pool():
         tags = Quartz.CGImageMetadataCopyTags(metadata_ref)
         if not tags:
-            return None
+            return {}
 
         metadata_dict = {}
         for i in range(CFArrayGetCount(tags)):
@@ -365,7 +369,7 @@ def metadata_dictionary_from_image_metadata_ref(metadata_ref):
         return metadata_dict.copy()
 
 
-def _recursive_parse_metadata_value(value):
+def _recursive_parse_metadata_value(value: Any) -> Any:
     if CFGetTypeID(value) == CFStringGetTypeID():
         return str(value)
     elif CFGetTypeID(value) == CFDictionaryGetTypeID():
