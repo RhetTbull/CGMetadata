@@ -236,8 +236,6 @@ def metadata_ref_set_tag(
         value: The value to set
 
     Returns: CGMutableImageMetadataRef with the tag set to value
-
-    Note: This f
     """
     with objc.autorelease_pool():
         if Quartz.CGImageMetadataSetValueWithPath(metadata_ref, None, tag_path, value):
@@ -391,27 +389,27 @@ def _recursive_parse_metadata_value(value: Any) -> Any:
         return value
 
 
-def properties_set_exif_value(
-    properties: CFDictionaryRef, key: str, value: Any
-) -> CFDictionaryRef:
-    """Set an exif value in a CFDictionaryRef as returned by .
+# def properties_set_exif_value(
+#     properties: CFDictionaryRef, key: str, value: Any
+# ) -> CFDictionaryRef:
+#     """Set an exif value in a CFDictionaryRef as returned by .
 
-    Args:
-        properties: A CFDictionaryRef
-        key: The key to set
-        value: The value to set
+#     Args:
+#         properties: A CFDictionaryRef
+#         key: The key to set
+#         value: The value to set
 
-    Returns: CFDictionaryRef with the key set to value
+#     Returns: CFDictionaryRef with the key set to value
 
-    Note: This function is useful for setting EXIF and IPTC metadata.
-    """
-    with objc.autorelease_pool():
-        if Quartz.CFDictionarySetValue(properties, key, value):
-            return properties
-        raise MetadataError(
-            f"Could not set key {key} to {value}; "
-            "verify the key and value are valid and that properties is a CFDictionaryRef"
-        )
+#     Note: This function is useful for setting EXIF and IPTC metadata.
+#     """
+#     with objc.autorelease_pool():
+#         if Quartz.CFDictionarySetValue(properties, key, value):
+#             return properties
+#         raise MetadataError(
+#             f"Could not set key {key} to {value}; "
+#             "verify the key and value are valid and that properties is a CFDictionaryRef"
+#         )
 
 
 #   - (void) addCustomEXIFData:(NSURL *)imageUrl property:(NSString *)property value:(NSString *)value {

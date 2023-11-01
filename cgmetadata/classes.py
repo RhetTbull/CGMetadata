@@ -1,7 +1,7 @@
 """Classes for CGMetadata"""
 
-import os
-from typing import IO, TYPE_CHECKING, Optional
+import pathlib
+from typing import IO, Any, Literal
 
 from .cgmetadata import (
     MetadataError,
@@ -14,21 +14,30 @@ from .cgmetadata import (
     metadata_ref_create_from_xmp,
     metadata_ref_create_mutable_copy,
     metadata_ref_serialize_xmp,
+    metadata_ref_set_tag,
+    metadata_ref_write_to_file,
+)
+from .constants import (
+    EXIF,
+    GPS,
+    IPTC,
+    TIFF,
+    WEBP,
+    XMP,
+    XMP_PACKET_FOOTER,
+    XMP_PACKET_HEADER,
 )
 from .types import CGMutableImageMetadataRef, FilePath
 from .utils import is_image
-
-XMP_PACKET_HEADER = "<?xpacket begin='?' id='W5M0MpCehiHzreSzNTczkc9d'?>\n"
-XMP_PACKET_FOOTER = "<?xpacket end='w'?>\n"
 
 
 class ImageMetadata:
     """Read and write image metadata properties using native macOS APIs."""
 
     def __init__(self, filepath: FilePath):
-        self.filepath = filepath
-        self._properties = load_image_properties(self.filepath)
-        self._metadata_ref = load_image_metadata_ref(self.filepath)
+        self.filepath = pathlib.Path(filepath).resolve()
+        self._context_manager = False
+        self._load()
 
     @property
     def properties(self):
@@ -44,34 +53,41 @@ class ImageMetadata:
 
         # change keys to remove the leading '{' and trailing '}'
         # e.g. '{IPTC}' -> 'IPTC' but only if the key starts with '{'
-        # also change Exif -> EXIF to match the other keys
+        # also change Exif -> EXIF, WebP -> WEBP to match the other keys
         properties = {
             key[1:-1] if key.startswith("{") else key: value
             for key, value in self._properties.items()
         }
         if "Exif" in properties:
             properties["EXIF"] = properties.pop("Exif")
+        if "WebP" in properties:
+            properties["WEBP"] = properties.pop("WebP")
         return properties
 
     @property
     def exif(self):
         """Return the EXIF properties dictionary from the image."""
-        return self.properties.get("EXIF", {})
+        return self.properties.get(EXIF, {})
 
     @property
     def iptc(self):
         """Return the IPTC properties dictionary from the image."""
-        return self.properties.get("IPTC", {})
+        return self.properties.get(IPTC, {})
 
     @property
     def tiff(self):
         """Return the TIFF properties dictionary from the image."""
-        return self.properties.get("TIFF", {})
+        return self.properties.get(TIFF, {})
 
     @property
     def gps(self):
         """Return the GPS properties dictionary from the image."""
-        return self.properties.get("GPS", {})
+        return self.properties.get(GPS, {})
+
+    @property
+    def webp(self):
+        """Return the WebP properties dictionary from the image."""
+        return self.properties.get(WEBP, {})
 
     @property
     def xmp(self):
@@ -106,6 +122,61 @@ class ImageMetadata:
         if header:
             xmp = XMP_PACKET_HEADER + xmp + XMP_PACKET_FOOTER
         fp.write(xmp)
+
+    def set(self, metadata_type: Literal["XMP", "EXIF"], key: str, value: Any):
+        """Set a metadata property for the image.
+
+        Args:
+            metadata_type: The type of metadata to set, either "XMP" or "EXIF".
+            key: The key path of the metadata property to set; e.g. "dc:creator".
+            value: The value to set the metadata property to.
+
+        Note: This does not write the metadata to the image file unless used
+            in conjunction with the context manager. Use write() to write the
+            metadata to the image file.
+        """
+        if metadata_type == XMP:
+            self._metadata_ref = metadata_ref_set_tag(self._metadata_ref, key, value)
+        elif metadata_type == EXIF:
+            raise NotImplementedError("set EXIF metadata not implemented")
+        else:
+            raise MetadataError(f"unknown metadata type: {metadata_type}")
+
+    def write(self):
+        """Write the metadata to the image file."""
+
+        # TODO: currently only handles XMP metadata
+        metadata_ref_write_to_file(self.filepath, self._metadata_ref)
+
+    def reload(self):
+        """Reload the metadata from the image file."""
+        self._load()
+
+    def _load(self):
+        try:
+            del self._metadata_ref
+        except AttributeError:
+            pass
+        try:
+            del self._properties
+        except AttributeError:
+            pass
+        self._properties = load_image_properties(self.filepath)
+        metadata_ref = load_image_metadata_ref(self.filepath)
+        self._metadata_ref = metadata_ref_create_mutable_copy(metadata_ref)
+        del metadata_ref
+
+    def __enter__(self):
+        """Enter the context manager."""
+        self._context_manager = True
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the context manager."""
+        if self._context_manager:
+            self.write()
+            self.reload()
+        self._context_manager = False
 
     def __del__(self):
         if self._metadata_ref is not None:
