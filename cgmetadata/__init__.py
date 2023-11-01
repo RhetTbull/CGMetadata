@@ -2,6 +2,6 @@
 
 from ._version import __version__
 from .cgmetadata import MetadataError
-from .classes import ImageProperties
+from .classes import ImageMetadata
 
-__all__ = ["ImageProperties", "MetadataError"]
+__all__ = ["ImageMetadata", "MetadataError"]

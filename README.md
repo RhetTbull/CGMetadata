@@ -11,13 +11,16 @@ Video formats are not currently supported.
 ## Synopsis
 
 ```pycon
->>> from cgmetadata import ImageProperties
->>> md = ImageProperties("IMG_1997.HEIC")
+>>> from cgmetadata import ImageMetadata
+>>> md = ImageMetadata("IMG_1997.HEIC")
 >>> md.properties
 ...
->>> md.metadata
+>>> md.exif
 ...
 >>> md.xmp
+...
+>>> with open("IMG_1997.xmp", "w") as fd:
+...     md.xmp_dump(fd)
 ...
 ```
 
@@ -44,6 +47,10 @@ pip install cgmetadata
 ```python
 ...
 ```
+
+## Supported Versions
+
+CGMetadata has been tested on macOS 13 (Ventura) but should work on macOS 11 (Big Sur) and later. It will not work on earlier versions of macOS due to the use of certain APIs that were introduced in macOS 11. It is compatible with Python 3.9 and later.
 
 ## License
 
