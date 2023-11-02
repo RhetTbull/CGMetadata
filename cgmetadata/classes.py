@@ -152,6 +152,12 @@ class ImageMetadata:
         """Reload the metadata from the image file."""
         self._load()
 
+    def asdict(self) -> dict[str, Any]:
+        """Return the metadata as a dictionary."""
+        dict_data = self.properties
+        dict_data[XMP] = self.xmp
+        return dict_data
+
     def _load(self):
         try:
             del self._metadata_ref
