@@ -3,7 +3,7 @@
 from ._version import __version__
 from .cgmetadata import MetadataError
 from .classes import ImageMetadata
-from .constants import EXIF, GPS, IPTC, TIFF, WEBP, XMP
+from .constants import EXIF, GPS, IPTC, TIFF, XMP
 
 __all__ = [
     "EXIF",
@@ -12,6 +12,5 @@ __all__ = [
     "ImageMetadata",
     "MetadataError",
     "TIFF",
-    "WEBP",
     "XMP",
 ]

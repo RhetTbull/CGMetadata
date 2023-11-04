@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import pathlib
+import shutil
+
 import pytest
 
-from cgmetadata import EXIF, GPS, IPTC, TIFF, WEBP, XMP, ImageMetadata
+from cgmetadata import EXIF, GPS, IPTC, TIFF, XMP, ImageMetadata
 
+TEST_HEIC = "tests/data/test.heic"
 TEST_JPG = "tests/data/test.jpeg"
 TEST_PNG = "tests/data/test.png"
-TEST_TIFF = "tests/data/test.tiff"
 TEST_RAW = "tests/data/test.cr2"
+TEST_TIFF = "tests/data/test.tiff"
 
-TEST_IMAGES = [TEST_JPG, TEST_PNG, TEST_TIFF, TEST_RAW]
+TEST_IMAGES_WRITEABLE = [TEST_JPG, TEST_PNG, TEST_HEIC, TEST_TIFF]
+TEST_IMAGES = TEST_IMAGES_WRITEABLE + [TEST_RAW]
 
 TEST_JPG_XMP = "tests/data/test.jpeg.xmp"
 TEST_JPG_MODIFIED_XMP = "tests/data/modified.xmp"
@@ -59,7 +64,70 @@ def test_imagemetadata_gps():
 
 
 @pytest.mark.parametrize("filepath", TEST_IMAGES)
-def test_imagemetadata_filetypes(filepath):
+def test_imagemetadata_filetypes(filepath: str):
     """Test ImageMetadata() with different filetypes"""
     md = ImageMetadata(filepath)
     assert md.xmp["dc:description"]
+
+
+@pytest.mark.parametrize("filepath", TEST_IMAGES_WRITEABLE)
+def test_imagemetadata_set_write_reload_properties(
+    filepath: str, tmp_path: pathlib.Path
+):
+    """Test ImageMetadata().set, .write(), .reload()"""
+
+    # copy test image to temp directory
+    test_file = tmp_path / pathlib.Path(filepath).name
+    shutil.copy(filepath, test_file)
+
+    md = ImageMetadata(test_file)
+    assert md.exif.get("LensMake") != "modified"
+
+    # ensure XMP and other properties are preserved
+    # ensure properties are preserved
+    make = md.tiff.get("Make")
+    keywords = md.iptc.get("Keywords")
+    latituderef = md.gps.get("LatitudeRef")
+    description = md.xmp.get("dc:description")
+
+    md.set(EXIF, "LensMake", "modified")
+    md.write()
+    md.reload()
+    assert md.exif["LensMake"] == "modified"
+
+    # ensure XMP and other properties are preserved
+    assert md.tiff.get("Make") == make
+    assert md.iptc.get("Keywords") == keywords
+    assert md.gps.get("LatitudeRef") == latituderef
+    assert md.xmp.get("dc:description") == description
+
+
+@pytest.mark.parametrize("filepath", TEST_IMAGES_WRITEABLE)
+def test_imagemetadata_set_write_reload_xmp_metadata(
+    filepath: str, tmp_path: pathlib.Path
+):
+    """Test ImageMetadata().set, .write(), .reload() for XMP metadata"""
+
+    # copy test image to temp directory
+    test_file = tmp_path / pathlib.Path(filepath).name
+    shutil.copy(filepath, tmp_path)
+
+    md = ImageMetadata(test_file)
+    assert md.xmp
+    assert md.xmp.get("dc:creator") != ["modified"]
+
+    # ensure properties are preserved
+    lensmake = md.exif.get("LensMake")
+    make = md.tiff.get("Make")
+    keywords = md.iptc.get("Keywords")
+    latituderef = md.gps.get("LatitudeRef")
+
+    md.set(XMP, "dc:creator", "modified")
+    md.write()
+    md.reload()
+
+    assert md.xmp["dc:creator"] == ["modified"]
+    assert md.exif.get("LensMake") == lensmake
+    assert md.tiff.get("Make") == make
+    assert md.iptc.get("Keywords") == keywords
+    assert md.gps.get("LatitudeRef") == latituderef

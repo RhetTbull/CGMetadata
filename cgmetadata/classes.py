@@ -7,12 +7,9 @@ import Quartz
 
 from .cgmetadata import (
     MetadataError,
-    load_image_metadata_dict,
     load_image_metadata_ref,
     load_image_properties,
-    load_image_properties_dict,
     metadata_dictionary_from_image_metadata_ref,
-    metadata_ref_create_empty_mutable,
     metadata_ref_create_from_xmp,
     metadata_ref_create_mutable_copy,
     metadata_ref_serialize_xmp,
@@ -21,16 +18,7 @@ from .cgmetadata import (
     properties_dict_set_tag,
     properties_dict_write_to_file,
 )
-from .constants import (
-    EXIF,
-    GPS,
-    IPTC,
-    TIFF,
-    WEBP,
-    XMP,
-    XMP_PACKET_FOOTER,
-    XMP_PACKET_HEADER,
-)
+from .constants import EXIF, GPS, IPTC, TIFF, XMP, XMP_PACKET_FOOTER, XMP_PACKET_HEADER
 from .types import FilePath
 from .utils import is_image, single_quotes_to_double_quotes, strip_xmp_packet
 
