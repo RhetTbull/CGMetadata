@@ -131,3 +131,20 @@ def test_imagemetadata_set_write_reload_xmp_metadata(
     assert md.tiff.get("Make") == make
     assert md.iptc.get("Keywords") == keywords
     assert md.gps.get("LatitudeRef") == latituderef
+
+
+def test_set_context_manager(tmp_path: pathlib.Path):
+    """Test ImageMetadata().set() with context manager"""
+    test_file = tmp_path / pathlib.Path(TEST_JPG).name
+    shutil.copy(TEST_JPG, test_file)
+
+    with ImageMetadata(test_file) as md:
+        md.set(XMP, "dc:creator", "modified")
+        md.set(EXIF, "LensMake", "modified")
+        md.set(TIFF, "Make", "modified")
+
+    md2 = ImageMetadata(test_file)
+    assert md2.xmp["dc:creator"] == ["modified"]
+    assert md2.exif["LensMake"] == "modified"
+    assert md2.tiff["Make"] == "modified"
+
