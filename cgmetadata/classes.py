@@ -31,17 +31,27 @@ from .constants import (
     XMP_PACKET_FOOTER,
     XMP_PACKET_HEADER,
 )
-from .types import CGMutableImageMetadataRef, FilePath
-from .utils import single_quotes_to_double_quotes, strip_xmp_packet
+from .types import FilePath
+from .utils import is_image, single_quotes_to_double_quotes, strip_xmp_packet
 
 
 class ImageMetadata:
-    """Read and write image metadata properties using native macOS APIs."""
+    """Read and write image metadata properties using native macOS APIs.
+
+    Args:
+        filepath: The path to the image file.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ValueError: If the file is not an image file.
+    """
 
     def __init__(self, filepath: FilePath):
         self.filepath = pathlib.Path(filepath).resolve()
         if not self.filepath.exists():
-            raise FileNotFoundError(f"file not found: {self.filepath}")
+            raise FileNotFoundError(f"File not found: {self.filepath}")
+        if not is_image(self.filepath):
+            raise ValueError(f"Not an image file: {self.filepath}")
         self._context_manager = False
         self._load()
 
@@ -89,11 +99,6 @@ class ImageMetadata:
     def gps(self):
         """Return the GPS properties dictionary from the image."""
         return self.properties.get(GPS, {})
-
-    @property
-    def webp(self):
-        """Return the WebP properties dictionary from the image."""
-        return self.properties.get(WEBP, {})
 
     @property
     def xmp(self):
@@ -172,7 +177,7 @@ class ImageMetadata:
         """Set a metadata property for the image.
 
         Args:
-            metadata_type: The type of metadata to set, one of "EXIF", "IPTC", "XMP", "TIFF", "GPS", "WEPB".
+            metadata_type: The type of metadata to set, one of "EXIF", "IPTC", "XMP", "TIFF", "GPS".
             key: The key path of the metadata property to set; e.g. "dc:creator", "Model"...
             value: The value to set the metadata property to.
 
@@ -185,12 +190,11 @@ class ImageMetadata:
             IPTC: Quartz.kCGImagePropertyIPTCDictionary,
             TIFF: Quartz.kCGImagePropertyTIFFDictionary,
             GPS: Quartz.kCGImagePropertyGPSDictionary,
-            WEBP: Quartz.kCGImagePropertyWebPDictionary,
         }
 
         if metadata_type == XMP:
             self._metadata_ref = metadata_ref_set_tag(self._metadata_ref, key, value)
-        elif metadata_type in [EXIF, IPTC, TIFF, GPS, WEBP]:
+        elif metadata_type in [EXIF, IPTC, TIFF, GPS]:
             cg_metadata_const = metadata_const[metadata_type]
             self._properties = properties_dict_set_tag(
                 self._properties, cg_metadata_const, key, value
