@@ -1,8 +1,8 @@
 """Constants for CGMetadata."""
 
 # XMP packet header and footer for serializing XMP metadata.
-XMP_PACKET_HEADER = "<?xpacket begin='?' id='W5M0MpCehiHzreSzNTczkc9d'?>\n"
-XMP_PACKET_FOOTER = "<?xpacket end='w'?>\n"
+XMP_PACKET_HEADER = '<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+XMP_PACKET_FOOTER = '<?xpacket end="w"?>'
 
 # Metadata types
 XMP = "XMP"

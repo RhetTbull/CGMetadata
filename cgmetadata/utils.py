@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import AppKit
 import objc
 import UniformTypeIdentifiers
@@ -34,3 +36,40 @@ def is_image(filepath: FilePath) -> bool:
             if current_type.conformsToType_(image_type):
                 return True
         return False
+
+
+def single_quotes_to_double_quotes(s: str) -> str:
+    """Replace single quotes with double quotes in a string."""
+
+    # this is a bit of hack
+
+    # replace all escaped backslashes with a placeholder
+    placeholder = "\u0000\u0001\u0000"
+    s = s.replace(r"\\", placeholder)
+
+    # replace all single quotes with double quotes except for escaped single quotes
+    s = re.sub(r"(?<!\\)'", '"', s)
+
+    # replace all placeholders with escaped backslashes
+    s = s.replace(placeholder, r"\\")
+
+    return s
+
+
+def strip_xmp_packet(xmp: str) -> str:
+    """Strip XMP packet header and footer from string.
+
+    Args:
+        xmp: An XMP string.
+
+    Returns: The XMP string with the packet header and footer removed.
+    """
+    header_pattern = (
+        r"<\?xpacket begin=['\"]\ufeff['\"] id=['\"]W5M0MpCehiHzreSzNTczkc9d['\"]\?>"
+    )
+    footer_pattern = r"<\?xpacket end=['\"]w['\"]\?>"
+
+    xmp = re.sub(header_pattern, "", xmp)
+    xmp = re.sub(footer_pattern, "", xmp)
+
+    return xmp.strip()

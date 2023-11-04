@@ -28,7 +28,7 @@ from .constants import (
     XMP_PACKET_HEADER,
 )
 from .types import CGMutableImageMetadataRef, FilePath
-from .utils import is_image
+from .utils import single_quotes_to_double_quotes, strip_xmp_packet
 
 
 class ImageMetadata:
@@ -108,7 +108,7 @@ class ImageMetadata:
         """
         xmp = metadata_ref_serialize_xmp(self._metadata_ref).decode("utf-8")
         if header:
-            xmp = XMP_PACKET_HEADER + xmp + XMP_PACKET_FOOTER
+            xmp = f"{XMP_PACKET_HEADER}\n{xmp}\n{XMP_PACKET_FOOTER}"
         return xmp
 
     def xmp_dump(self, fp: IO[str], header: bool = True):
@@ -122,6 +122,40 @@ class ImageMetadata:
         if header:
             xmp = XMP_PACKET_HEADER + xmp + XMP_PACKET_FOOTER
         fp.write(xmp)
+
+    def xmp_loads(self, xmp: str):
+        """Load XMP metadata from a string.
+
+        Args:
+            xmp: The XMP metadata as a string.
+            fix_quotes: If True, replace single quotes with double quotes.
+
+        Note: This does not write the metadata to the image file.
+            Use write() to write the loaded metadata to the image file.
+            The XMP standard allows quoted strings to use either single or double quotes.
+            For example, exiftool uses single quotes. However, the native macOS APIs
+            (CGImageMetadataCreateFromXMPData) returns nil if the XMP data contains single quotes.
+            This does not appear to be documented anywhere in the Apple documentation.
+            This function replaces single quotes with double quotes to avoid this issue.
+        """
+        self._xmp_set_from_str(xmp)
+
+    def xmp_load(self, fp: IO[str]):
+        """Load XMP metadata from a file.
+
+        Args:
+            fp: The file pointer to read the XMP metadata from.
+
+        Note: This does not write the metadata to the image file.
+            Use write() to write the loaded metadata to the image file.
+            The XMP standard allows quoted strings to use either single or double quotes.
+            For example, exiftool uses single quotes. However, the native macOS APIs
+            (CGImageMetadataCreateFromXMPData) returns nil if the XMP data contains single quotes.
+            This does not appear to be documented anywhere in the Apple documentation.
+            This function replaces single quotes with double quotes to avoid this issue.
+        """
+        xmp = fp.read()
+        self._xmp_set_from_str(xmp)
 
     def set(self, metadata_type: Literal["XMP", "EXIF"], key: str, value: Any):
         """Set a metadata property for the image.
@@ -171,6 +205,23 @@ class ImageMetadata:
         metadata_ref = load_image_metadata_ref(self.filepath)
         self._metadata_ref = metadata_ref_create_mutable_copy(metadata_ref)
         del metadata_ref
+
+    def _xmp_set_from_str(self, xmp: str):
+        """Set the XMP metadata from a string representing serialized XMP."""
+
+        # The Apple API requires that the XMP data use double quotes for quoted strings
+        # and that the XMP data not contain the XMP packet headers
+        xmp = single_quotes_to_double_quotes(xmp)
+        xmp = strip_xmp_packet(xmp)
+        xmp = xmp.encode("utf-8")
+        self._xmp_set_from_bytes(xmp)
+
+    def _xmp_set_from_bytes(self, xmp: bytes):
+        """Set the XMP metadata from a bytes object representing serialized XMP."""
+        metadata = metadata_ref_create_from_xmp(xmp)
+        del self._metadata_ref
+        self._metadata_ref = metadata_ref_create_mutable_copy(metadata)
+        del metadata
 
     def __enter__(self):
         """Enter the context manager."""

@@ -199,7 +199,26 @@ def metadata_ref_serialize_xmp(metadata_ref: Quartz.CGImageMetadataRef) -> bytes
 
 
 def metadata_ref_create_from_xmp(xmp: bytes) -> Quartz.CGImageMetadataRef:
-    """Create a Quartz.CGImageMetadataRef from serialized XMP."""
+    """Create a Quartz.CGImageMetadataRef from serialized XMP.
+
+    Args:
+        xmp: bytes object containing serialized XMP
+
+    Returns: Quartz.CGImageMetadataRef
+
+    Raises:
+        MetadataError: If the metadata could not be created from the XMP data.
+
+    Note: Quoted strings in the xmp data must use double quotes, not single quotes (apostrophes).
+        The XMP standard allows strings in either format and exiftool uses single quotes but
+        CGImageMetadataCreateFromXMPData returns nil if the XMP data contains single quotes.
+        This does not appear to be documented anywhere in the Apple documentation.
+        Also, the Apple documentation for CGImageMetadataCreateFromXMPData is incorrect;
+        it states the XMP may contain the XMP packet header but if provided a valid XMP tree
+        with packet header, the function returns nil.
+
+        Reference: https://developer.apple.com/documentation/imageio/1465001-cgimagemetadatacreatefromxmpdata?language=objc
+    """
     with objc.autorelease_pool():
         data = NSData.dataWithBytes_length_(xmp, len(xmp))
         metadata_ref = Quartz.CGImageMetadataCreateFromXMPData(data)
