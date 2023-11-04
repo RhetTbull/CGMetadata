@@ -266,8 +266,15 @@ def metadata_ref_set_tag(
 
 
 def metadata_ref_write_to_file(
-    image_path: FilePath, metadata_ref: Quartz.CGImageMetadataRef
+    image_path: FilePath,
+    metadata_ref: Quartz.CGImageMetadataRef,
 ) -> None:
+    """Write metadata to an image file.
+
+    Args:
+        image_path: Path to the image file.
+        metadata_ref: A CGImageMetadataRef containing the metadata to write.
+    """
     with objc.autorelease_pool():
         image_url = NSURL.fileURLWithPath_(str(image_path))
         image_source = Quartz.CGImageSourceCreateWithURL(image_url, None)
@@ -292,9 +299,47 @@ def metadata_ref_write_to_file(
                 None,
             )
             Quartz.CGImageDestinationFinalize(destination)
-        del image_source
-        del image_data
+
         del destination
+        del image_data
+        del image_source
+
+
+def properties_dict_write_to_file(
+    image_path: FilePath,
+    properties: CFDictionaryRef,
+) -> None:
+    """Write properties to an image file.
+
+    Args:
+        image_path: Path to the image file.
+        properties: A CFDictionaryRef containing the properties to write.
+    """
+    with objc.autorelease_pool():
+        image_url = NSURL.fileURLWithPath_(str(image_path))
+        image_source = Quartz.CGImageSourceCreateWithURL(image_url, None)
+        if not image_source:
+            raise MetadataError(f"Could not create image source for {image_path}")
+        image_type = Quartz.CGImageSourceGetType(image_source)
+        destination = Quartz.CGImageDestinationCreateWithURL(
+            image_url, image_type, 1, None
+        )
+        if not destination:
+            raise MetadataError(f"Could not create image destination for {image_path}")
+        with pipes() as (_out, _err):
+            # On some versions of macOS this causes error to stdout
+            # of form: AVEBridge Info: AVEEncoder_CreateInstance: Received CreateInstance (from VT)...
+            # even though the operation succeeds
+            # Use pipes() to suppress this error
+            image_data = Quartz.CGImageSourceCreateImageAtIndex(image_source, 0, None)
+            Quartz.CGImageDestinationAddImageFromSource(
+                destination, image_source, 0, properties
+            )
+            Quartz.CGImageDestinationFinalize(destination)
+
+        del destination
+        del image_data
+        del image_source
 
 
 def image_file_write_properties_metadata(
@@ -331,6 +376,32 @@ def image_file_write_properties_metadata(
         del image_source
         del image_data
         del destination
+
+
+def properties_dict_set_tag(
+    properties_dict: CFDictionaryRef, sub_dict: str | None, tag: str, value: Any
+) -> CFDictionaryRef:
+    """Set a tag to value in a CFDictionaryRef as returned by load_image_properties.
+
+    Args:
+        properties_dict: A CFDictionaryRef
+        sub_dict: The sub dictionary to set or None if the tag is not in a sub dictionary
+        tag: The tag to set
+        value: The value to set
+
+    Returns: CFDictionaryRef with the tag set to value
+    """
+    mutable_dict = properties_dict.mutableCopy()
+    if sub_dict:
+        dict_ref = mutable_dict[sub_dict].mutableCopy()
+        if not dict_ref:
+            dict_ref = NSMutableDictionary.dictionary()
+        dict_ref[tag] = value
+        mutable_dict[sub_dict] = dict_ref
+        return mutable_dict
+
+    mutable_dict[tag] = value
+    return mutable_dict
 
 
 def NSDictionary_to_dict_recursive(ns_dict: NSDictionary) -> dict[str, Any]:
