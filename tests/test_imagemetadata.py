@@ -148,3 +148,52 @@ def test_set_context_manager(tmp_path: pathlib.Path):
     assert md2.exif["LensMake"] == "modified"
     assert md2.tiff["Make"] == "modified"
 
+
+def test_xmp_dumps(tmp_path: pathlib.Path):
+    """Test ImageMetadata().xmp_dumps()"""
+    test_file = tmp_path / pathlib.Path(TEST_JPG).name
+    shutil.copy(TEST_JPG, test_file)
+
+    md = ImageMetadata(test_file)
+    xmp = md.xmp_dumps()
+    assert xmp.startswith("<?xpacket begin=") and xmp.endswith('<?xpacket end="w"?>')
+    assert "dc:description" in xmp
+
+
+def test_xmp_dumps_no_header(tmp_path: pathlib.Path):
+    """Test ImageMetadata().xmp_dumps()"""
+    test_file = tmp_path / pathlib.Path(TEST_JPG).name
+    shutil.copy(TEST_JPG, test_file)
+
+    md = ImageMetadata(test_file)
+    xmp = md.xmp_dumps(header=False)
+    assert "<?xpacket begin=" not in xmp and '<?xpacket end="w"?>' not in xmp
+    assert "dc:description" in xmp
+
+
+def test_xmp_dump(tmp_path: pathlib.Path):
+    """Test ImageMetadata().xmp_dump()"""
+    test_file = tmp_path / pathlib.Path(TEST_JPG).name
+    shutil.copy(TEST_JPG, test_file)
+
+    md = ImageMetadata(test_file)
+    sidecar = tmp_path / "test.xmp"
+    with open(sidecar, "w") as f:
+        md.xmp_dump(f)
+    xmp = sidecar.read_text()
+    assert xmp.startswith("<?xpacket begin=") and xmp.endswith('<?xpacket end="w"?>')
+    assert "dc:description" in xmp
+
+
+def test_xmp_dump_no_header(tmp_path: pathlib.Path):
+    """Test ImageMetadata().xmp_dump()"""
+    test_file = tmp_path / pathlib.Path(TEST_JPG).name
+    shutil.copy(TEST_JPG, test_file)
+
+    md = ImageMetadata(test_file)
+    sidecar = tmp_path / "test.xmp"
+    with open(sidecar, "w") as f:
+        md.xmp_dump(f, header=False)
+    xmp = sidecar.read_text()
+    assert "<?xpacket begin=" not in xmp and '<?xpacket end="w"?>' not in xmp
+    assert "dc:description" in xmp
