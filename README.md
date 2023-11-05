@@ -1,25 +1,30 @@
 # CGMetadata
 
-Read and write image metadata on macOS from Python using the native ImageIO / Core Graphics frameworks.
+Read and write image metadata on macOS from Python using the native [ImageIO / Core Graphics frameworks](https://developer.apple.com/documentation/imageio).
 
 CGMetadata is a Python wrapper around the macOS ImageIO and Core Graphics frameworks. It provides a simple interface for reading and writing image metadata, including EXIF, IPTC, and XMP data. Reading is supported for all image formats supported by ImageIO. Writing is not currently supported for RAW file formats.
 
 Video formats are not currently supported.
-
->*Note*: This is a work in progress and not yet ready for use.
 
 ## Synopsis
 
 ```pycon
 >>> from cgmetadata import ImageMetadata
 >>> md = ImageMetadata("tests/data/test.heic")
->>> md.exif["LensModel"]
+>>> md.exif["LensMake"]
+'Apple'
+>>> md.iptc["Keywords"]
+(
+    flower,
+    plant,
+    farm
+)
+>>> md.xmp["dc:description"]
+['A sunflower plant']
+>>> # write an XMP sidecar file for the image
+>>> with open("test.xmp", "w") as f:
+...     md.xmp_dump(f)
 ...
->>> md.xmp
-...
->>> # write an XMP sidecar file
->>> with open("/private/tmp/test.xmp", "w") as fd:
-...     md.xmp_dump(fd)
 ```
 
 ## Installation

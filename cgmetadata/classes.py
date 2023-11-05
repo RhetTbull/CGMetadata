@@ -172,6 +172,12 @@ class ImageMetadata:
         Note: This does not write the metadata to the image file unless used
             in conjunction with the context manager. Use write() to write the
             metadata to the image file after setting one or more values.
+            Metadata keys may be specified as a literal string, e.g. "LensModel" or using
+            one of the constants from the ImageIO module, e.g. kCGImagePropertyExifLensModel,
+            which are referenced here: https://developer.apple.com/documentation/imageio/exif_dictionary_keys
+            These are available in the pyobjc Quartz module as Quartz.kCGImagePropertyExifLensModel, etc.
+            You are responsible for passing the correct type of value for the metadata key, 
+            for example, str or list[str].
         """
         if group == XMP:
             self._metadata_ref = metadata_ref_set_tag_with_path(
