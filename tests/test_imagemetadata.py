@@ -94,6 +94,7 @@ def test_imagemetadata_set_write_reload_properties(
     md.write()
     md.reload()
     assert md.exif["LensMake"] == "modified"
+    assert md.xmp["exifEX:LensMake"] == "modified"
 
     # ensure XMP and other properties are preserved
     assert md.tiff.get("Make") == make
@@ -197,3 +198,32 @@ def test_xmp_dump_no_header(tmp_path: pathlib.Path):
     xmp = sidecar.read_text()
     assert "<?xpacket begin=" not in xmp and '<?xpacket end="w"?>' not in xmp
     assert "dc:description" in xmp
+
+
+def test_xmp_loads(tmp_path: pathlib.Path):
+    """Test ImageMetadata().xmp_loads()"""
+    test_file = tmp_path / pathlib.Path(TEST_JPG).name
+    shutil.copy(TEST_JPG, test_file)
+
+    md = ImageMetadata(test_file)
+    assert not sorted(md.xmp["dc:subject"]) == ["Bar", "Foo"]
+    md.xmp_loads(pathlib.Path(TEST_JPG_MODIFIED_XMP).read_text())
+    md.write()
+    md.reload()
+    assert md.xmp["dc:creator"] == ["modified"]
+    assert sorted(md.xmp["dc:subject"]) == ["Bar", "Foo"]
+
+
+def test_xmp_load(tmp_path: pathlib.Path):
+    """Test ImageMetadata().xmp_load()"""
+    test_file = tmp_path / pathlib.Path(TEST_JPG).name
+    shutil.copy(TEST_JPG, test_file)
+
+    md = ImageMetadata(test_file)
+    assert not sorted(md.xmp["dc:subject"]) == ["Bar", "Foo"]
+    with open(TEST_JPG_MODIFIED_XMP) as f:
+        md.xmp_load(f)
+    md.write()
+    md.reload()
+    assert md.xmp["dc:creator"] == ["modified"]
+    assert sorted(md.xmp["dc:subject"]) == ["Bar", "Foo"]

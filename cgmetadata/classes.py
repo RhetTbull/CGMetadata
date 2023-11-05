@@ -6,17 +6,15 @@ from typing import IO, Any, Literal
 import Quartz
 
 from .cgmetadata import (
-    MetadataError,
     load_image_metadata_ref,
     load_image_properties,
     metadata_dictionary_from_image_metadata_ref,
     metadata_ref_create_from_xmp,
     metadata_ref_create_mutable_copy,
     metadata_ref_serialize_xmp,
-    metadata_ref_set_tag,
+    metadata_ref_set_tag_for_dict,
+    metadata_ref_set_tag_with_path,
     metadata_ref_write_to_file,
-    properties_dict_set_tag,
-    properties_dict_write_to_file,
 )
 from .constants import EXIF, GPS, IPTC, TIFF, XMP, XMP_PACKET_FOOTER, XMP_PACKET_HEADER
 from .types import FilePath
@@ -158,45 +156,35 @@ class ImageMetadata:
 
     def set(
         self,
-        metadata_type: Literal["EXIF", "IPTC", "XMP", "TIFF", "GPS", "WEPB"],
+        group: Literal["EXIF", "IPTC", "TIFF", "GPS", "XMP"],
         key: str,
         value: Any,
     ):
         """Set a metadata property for the image.
 
         Args:
-            metadata_type: The type of metadata to set, one of "EXIF", "IPTC", "XMP", "TIFF", "GPS".
-            key: The key path of the metadata property to set; e.g. "dc:creator", "Model"...
+            group: The metadata group type to set the property for, for example, "IPTC", "XMP"
+            key: The key or key path of the metadata property to set;
+                for "XMP" metadata, the key is in form "prefix:name", e.g. "dc:creator", "dc:description"...
+                for other metadata, the key is the name of the property, e.g. "LensModel", "Make", "Keywords"...
             value: The value to set the metadata property to.
 
         Note: This does not write the metadata to the image file unless used
             in conjunction with the context manager. Use write() to write the
-            metadata to the image file.
+            metadata to the image file after setting one or more values.
         """
-        metadata_const = {
-            EXIF: Quartz.kCGImagePropertyExifDictionary,
-            IPTC: Quartz.kCGImagePropertyIPTCDictionary,
-            TIFF: Quartz.kCGImagePropertyTIFFDictionary,
-            GPS: Quartz.kCGImagePropertyGPSDictionary,
-        }
-
-        if metadata_type == XMP:
-            self._metadata_ref = metadata_ref_set_tag(self._metadata_ref, key, value)
-        elif metadata_type in [EXIF, IPTC, TIFF, GPS]:
-            cg_metadata_const = metadata_const[metadata_type]
-            self._properties = properties_dict_set_tag(
-                self._properties, cg_metadata_const, key, value
+        if group == XMP:
+            self._metadata_ref = metadata_ref_set_tag_with_path(
+                self._metadata_ref, key, value
             )
         else:
-            raise MetadataError(f"Unknown metadata type: {metadata_type}")
+            self._metadata_ref = metadata_ref_set_tag_for_dict(
+                self._metadata_ref, group, key, value
+            )
 
     def write(self):
         """Write the metadata to the image file."""
-        # this writes the file twice, once for XMP metadata and once for properties
-        # I can't figure out how to write both at the same time
-        # PRs welcome!
         metadata_ref_write_to_file(self.filepath, self._metadata_ref)
-        properties_dict_write_to_file(self.filepath, self._properties)
 
     def reload(self):
         """Reload the metadata from the image file."""
@@ -238,7 +226,6 @@ class ImageMetadata:
     def _xmp_set_from_bytes(self, xmp: bytes):
         """Set the XMP metadata from a bytes object representing serialized XMP."""
         metadata = metadata_ref_create_from_xmp(xmp)
-        del self._metadata_ref
         self._metadata_ref = metadata_ref_create_mutable_copy(metadata)
         del metadata
 

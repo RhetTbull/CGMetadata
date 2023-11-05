@@ -10,7 +10,7 @@ this is done with `del Object` in pyobjc.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import objc
 import Quartz
@@ -22,6 +22,7 @@ from CoreFoundation import (
     CFDictionaryGetTypeID,
     CFDictionaryRef,
     CFGetTypeID,
+    CFStringCreateCopy,
     CFStringGetTypeID,
 )
 from Foundation import (
@@ -35,11 +36,6 @@ from Foundation import (
 from wurlitzer import pipes
 
 from .types import CGMutableImageMetadataRef, FilePath
-
-# CGImageSourceCopyAuxiliaryDataInfoAtIndex
-# CGImageDestinationAddImageAndMetadata
-# CGImageDestinationSetProperties
-# CGImageDestinationAddAuxiliaryDataInfo
 
 
 class MetadataError(Exception):
@@ -242,7 +238,7 @@ def metadata_ref_create_empty_mutable() -> CGMutableImageMetadataRef:
         return Quartz.CGImageMetadataCreateMutable()
 
 
-def metadata_ref_set_tag(
+def metadata_ref_set_tag_with_path(
     metadata_ref: CGMutableImageMetadataRef,
     tag_path: str,
     value: Any,
@@ -262,6 +258,67 @@ def metadata_ref_set_tag(
         raise MetadataError(
             f"Could not set tag {tag_path} to {value}; "
             "verify the tag and value are valid and that metadata_ref is a CGMutableImageMetadataRef"
+        )
+
+
+def metadata_ref_set_tag_for_dict(
+    metadata_ref: CGMutableImageMetadataRef,
+    dictionary: Literal[
+        "EXIF",
+        "IPTC",
+        "XMP",
+        "TIFF",
+        "GPS",
+        "WEBP",
+        "HEIC",
+        "CIFF",
+        "DNG",
+        "GIF",
+        "JFIF",
+        "PNG",
+        "TGA",
+        "8BIM",
+    ],
+    tag: str,
+    value: Any,
+) -> CGMutableImageMetadataRef:
+    """Set a metadata tag to value in a CGMutableImageMetadataRef for the given dictionary
+
+    Args:
+        metadata_ref: A CGMutableImageMetadataRef
+        dictionary: The dictionary to set (e.g. "EXIF", "IPTC", "XMP", "TIFF", "GPS")
+        tag: The tag to set
+        value: The value to set
+
+    Returns: CGMutableImageMetadataRef with the tag set to value
+    """
+    dict_names = {
+        "EXIF": Quartz.kCGImagePropertyExifDictionary,
+        "IPTC": Quartz.kCGImagePropertyIPTCDictionary,
+        "GPS": Quartz.kCGImagePropertyGPSDictionary,
+        "WEBP": Quartz.kCGImagePropertyWebPDictionary,
+        "HEIC": Quartz.kCGImagePropertyHEICSDictionary,
+        "CIFF": Quartz.kCGImagePropertyCIFFDictionary,
+        "DNG": Quartz.kCGImagePropertyDNGDictionary,
+        "GIF": Quartz.kCGImagePropertyGIFDictionary,
+        "JFIF": Quartz.kCGImagePropertyJFIFDictionary,
+        "PNG": Quartz.kCGImagePropertyPNGDictionary,
+        "TGA": Quartz.kCGImagePropertyTGADictionary,
+        "TIFF": Quartz.kCGImagePropertyTIFFDictionary,
+        "8BIM": Quartz.kCGImageProperty8BIMDictionary,
+    }
+    dict_name = dict_names.get(dictionary.upper())
+    if not dict_name:
+        raise MetadataError(f"Invalid dictionary {dictionary}")
+
+    with objc.autorelease_pool():
+        if Quartz.CGImageMetadataSetValueMatchingImageProperty(
+            metadata_ref, dict_name, tag, value
+        ):
+            return metadata_ref
+        raise MetadataError(
+            f"Could not set tag {tag} to {value} for dictionary {dict_name}; "
+            "verify the dictionary, tag, and value are valid and that metadata_ref is a CGMutableImageMetadataRef"
         )
 
 
@@ -340,42 +397,6 @@ def properties_dict_write_to_file(
         del destination
         del image_data
         del image_source
-
-
-def image_file_write_properties_metadata(
-    image_path: FilePath,
-    properties: CFDictionaryRef,
-    metadata_ref: Quartz.CGImageMetadataRef,
-) -> None:
-    """Write properties and metadata to an image file."""
-    with objc.autorelease_pool():
-        image_url = NSURL.fileURLWithPath_(str(image_path))
-        image_source = Quartz.CGImageSourceCreateWithURL(image_url, None)
-        if not image_source:
-            raise MetadataError(f"Could not create image source for {image_path}")
-        image_type = Quartz.CGImageSourceGetType(image_source)
-        destination = Quartz.CGImageDestinationCreateWithURL(
-            image_url, image_type, 1, None
-        )
-        if not destination:
-            raise MetadataError(f"Could not create image destination for {image_path}")
-        with pipes() as (_out, _err):
-            # On some versions of macOS this causes error to stdout
-            # of form: AVEBridge Info: AVEEncoder_CreateInstance: Received CreateInstance (from VT)...
-            # even though the operation succeeds
-            # Use pipes() to suppress this error
-            image_data = Quartz.CGImageSourceCreateImageAtIndex(image_source, 0, None)
-            Quartz.CGImageDestinationAddImageAndMetadata(
-                destination,
-                image_data,
-                metadata_ref,
-                None,
-            )
-            Quartz.CGImageDestinationSetProperties(destination, properties)
-            Quartz.CGImageDestinationFinalize(destination)
-        del image_source
-        del image_data
-        del destination
 
 
 def properties_dict_set_tag(
@@ -479,67 +500,37 @@ def _recursive_parse_metadata_value(value: Any) -> Any:
         return value
 
 
-# def properties_set_exif_value(
-#     properties: CFDictionaryRef, key: str, value: Any
-# ) -> CFDictionaryRef:
-#     """Set an exif value in a CFDictionaryRef as returned by .
-
-#     Args:
-#         properties: A CFDictionaryRef
-#         key: The key to set
-#         value: The value to set
-
-#     Returns: CFDictionaryRef with the key set to value
-
-#     Note: This function is useful for setting EXIF and IPTC metadata.
-#     """
+# def image_file_write_properties_metadata(
+#     image_path: FilePath,
+#     properties: CFDictionaryRef,
+#     metadata_ref: Quartz.CGImageMetadataRef,
+# ) -> None:
+#     """Write properties and metadata to an image file."""
 #     with objc.autorelease_pool():
-#         if Quartz.CFDictionarySetValue(properties, key, value):
-#             return properties
-#         raise MetadataError(
-#             f"Could not set key {key} to {value}; "
-#             "verify the key and value are valid and that properties is a CFDictionaryRef"
+#         image_url = NSURL.fileURLWithPath_(str(image_path))
+#         image_source = Quartz.CGImageSourceCreateWithURL(image_url, None)
+#         if not image_source:
+#             raise MetadataError(f"Could not create image source for {image_path}")
+#         image_type = Quartz.CGImageSourceGetType(image_source)
+#         destination = Quartz.CGImageDestinationCreateWithURL(
+#             image_url, image_type, 1, None
 #         )
-
-
-#   - (void) addCustomEXIFData:(NSURL *)imageUrl property:(NSString *)property value:(NSString *)value {
-
-#       CGImageSourceRef sourceRef = CGImageSourceCreateWithURL((CFURLRef)imageUrl, NULL);
-
-#       if(!sourceRef)
-#           return;
-
-#       CFStringRef cfProperty = (__bridge CFStringRef)(property);
-#       CFStringRef cfValue = (__bridge CFStringRef)(value);
-#       CFDictionaryRef propDict = CGImageSourceCopyPropertiesAtIndex(sourceRef, 0, NULL);
-
-#       NSMutableDictionary *metadataAsMutable = [(__bridge NSDictionary*)propDict mutableCopy];
-#       NSMutableDictionary *EXIFDictionary = [[metadataAsMutable objectForKey:(__bridge NSString*)kCGImagePropertyExifDictionary] mutableCopy];
-
-#       if(!EXIFDictionary)
-#           EXIFDictionary = [NSMutableDictionary dictionary];
-
-#       [EXIFDictionary setObject:(__bridge id _Nonnull)(cfValue) forKey:(__bridge id _Nonnull)(cfProperty)];
-#       [metadataAsMutable setObject:EXIFDictionary forKey:(__bridge NSString*)kCGImagePropertyExifDictionary];
-
-#       CFStringRef UTI = CGImageSourceGetType(sourceRef);
-#       NSMutableData *dest_data = [NSMutableData data];
-#       CGImageDestinationRef destination = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)dest_data,UTI,1,NULL);
-
-#       if(!destination) {
-#           NSLog(@"***Could not create image destination ***");
-#       }
-#       CGImageDestinationAddImageFromSource(destination,sourceRef,0, (__bridge CFDictionaryRef) metadataAsMutable);
-#       BOOL success = CGImageDestinationFinalize(destination);
-#       if(!success) {
-#           NSLog(@"***Could not create data from image destination ***");
-#       }
-#       CFRelease(destination);
-#       CFRelease(sourceRef);
-
-#       [dest_data writeToFile:[imageUrl path] atomically:YES];
-
-#       //Cleanup
-#       CFRelease(cfValue);
-#       CFRelease(cfProperty);
-#   }
+#         if not destination:
+#             raise MetadataError(f"Could not create image destination for {image_path}")
+#         with pipes() as (_out, _err):
+#             # On some versions of macOS this causes error to stdout
+#             # of form: AVEBridge Info: AVEEncoder_CreateInstance: Received CreateInstance (from VT)...
+#             # even though the operation succeeds
+#             # Use pipes() to suppress this error
+#             image_data = Quartz.CGImageSourceCreateImageAtIndex(image_source, 0, None)
+#             Quartz.CGImageDestinationAddImageAndMetadata(
+#                 destination,
+#                 image_data,
+#                 metadata_ref,
+#                 None,
+#             )
+#             Quartz.CGImageDestinationSetProperties(destination, properties)
+#             Quartz.CGImageDestinationFinalize(destination)
+#         del image_source
+#         del image_data
+#         del destination
