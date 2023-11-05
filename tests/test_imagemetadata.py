@@ -71,10 +71,8 @@ def test_imagemetadata_filetypes(filepath: str):
 
 
 @pytest.mark.parametrize("filepath", TEST_IMAGES_WRITEABLE)
-def test_imagemetadata_set_write_reload_properties(
-    filepath: str, tmp_path: pathlib.Path
-):
-    """Test ImageMetadata().set, .write(), .reload()"""
+def test_imagemetadata_set_write_properties(filepath: str, tmp_path: pathlib.Path):
+    """Test ImageMetadata().set, .write()"""
 
     # copy test image to temp directory
     test_file = tmp_path / pathlib.Path(filepath).name
@@ -92,7 +90,6 @@ def test_imagemetadata_set_write_reload_properties(
 
     md.set(EXIF, "LensMake", "modified")
     md.write()
-    md.reload()
     assert md.exif["LensMake"] == "modified"
     assert md.xmp["exifEX:LensMake"] == "modified"
 
@@ -104,10 +101,8 @@ def test_imagemetadata_set_write_reload_properties(
 
 
 @pytest.mark.parametrize("filepath", TEST_IMAGES_WRITEABLE)
-def test_imagemetadata_set_write_reload_xmp_metadata(
-    filepath: str, tmp_path: pathlib.Path
-):
-    """Test ImageMetadata().set, .write(), .reload() for XMP metadata"""
+def test_imagemetadata_set_write_xmp_metadata(filepath: str, tmp_path: pathlib.Path):
+    """Test ImageMetadata().set, .write() for XMP metadata"""
 
     # copy test image to temp directory
     test_file = tmp_path / pathlib.Path(filepath).name
@@ -125,7 +120,6 @@ def test_imagemetadata_set_write_reload_xmp_metadata(
 
     md.set(XMP, "dc:creator", "modified")
     md.write()
-    md.reload()
 
     assert md.xmp["dc:creator"] == ["modified"]
     assert md.exif.get("LensMake") == lensmake
@@ -209,7 +203,6 @@ def test_xmp_loads(tmp_path: pathlib.Path):
     assert not sorted(md.xmp["dc:subject"]) == ["Bar", "Foo"]
     md.xmp_loads(pathlib.Path(TEST_JPG_MODIFIED_XMP).read_text())
     md.write()
-    md.reload()
     assert md.xmp["dc:creator"] == ["modified"]
     assert sorted(md.xmp["dc:subject"]) == ["Bar", "Foo"]
 
@@ -224,6 +217,5 @@ def test_xmp_load(tmp_path: pathlib.Path):
     with open(TEST_JPG_MODIFIED_XMP) as f:
         md.xmp_load(f)
     md.write()
-    md.reload()
     assert md.xmp["dc:creator"] == ["modified"]
     assert sorted(md.xmp["dc:subject"]) == ["Bar", "Foo"]

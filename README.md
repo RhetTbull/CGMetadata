@@ -12,17 +12,14 @@ Video formats are not currently supported.
 
 ```pycon
 >>> from cgmetadata import ImageMetadata
->>> md = ImageMetadata("IMG_1997.HEIC")
->>> md.properties
-...
->>> md.exif
+>>> md = ImageMetadata("tests/data/test.heic")
+>>> md.exif["LensModel"]
 ...
 >>> md.xmp
 ...
 >>> # write an XMP sidecar file
->>> with open("IMG_1997.xmp", "w") as fd:
+>>> with open("/private/tmp/test.xmp", "w") as fd:
 ...     md.xmp_dump(fd)
-...
 ```
 
 ## Installation

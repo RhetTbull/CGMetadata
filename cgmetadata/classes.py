@@ -183,8 +183,9 @@ class ImageMetadata:
             )
 
     def write(self):
-        """Write the metadata to the image file."""
+        """Write the metadata to the image file then reloads the metadata from the image."""
         metadata_ref_write_to_file(self.filepath, self._metadata_ref)
+        self.reload()
 
     def reload(self):
         """Reload the metadata from the image file."""
