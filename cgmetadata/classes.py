@@ -127,7 +127,8 @@ class ImageMetadata:
             xmp: The XMP metadata as a string.
             fix_quotes: If True, replace single quotes with double quotes.
 
-        Note: This does not write the metadata to the image file.
+        Note:
+            This does not write the metadata to the image file.
             Use write() to write the loaded metadata to the image file.
             The XMP standard allows quoted strings to use either single or double quotes.
             For example, exiftool uses single quotes. However, the native macOS APIs
@@ -143,7 +144,8 @@ class ImageMetadata:
         Args:
             fp: The file pointer to read the XMP metadata from.
 
-        Note: This does not write the metadata to the image file.
+        Note:
+            This does not write the metadata to the image file.
             Use write() to write the loaded metadata to the image file.
             The XMP standard allows quoted strings to use either single or double quotes.
             For example, exiftool uses single quotes. However, the native macOS APIs
@@ -169,15 +171,16 @@ class ImageMetadata:
                 for other metadata, the key is the name of the property, e.g. "LensModel", "Make", "Keywords"...
             value: The value to set the metadata property to.
 
-        Note: This does not write the metadata to the image file unless used
-            in conjunction with the context manager. Use write() to write the
-            metadata to the image file after setting one or more values.
+        Note:
+            This does not write the metadata to the image file unless used in conjunction with the context manager.
+            Use write() to write the metadata to the image file after setting one or more values.
             Metadata keys may be specified as a literal string, e.g. "LensModel" or using
             one of the constants from the ImageIO module, e.g. kCGImagePropertyExifLensModel,
             which are referenced here: https://developer.apple.com/documentation/imageio/exif_dictionary_keys
             These are available in the pyobjc Quartz module as Quartz.kCGImagePropertyExifLensModel, etc.
-            You are responsible for passing the correct type of value for the metadata key, 
-            for example, str or list[str].
+            You are responsible for passing the correct type of value for the metadata key,
+            for example, str or list[str]. See https://github.com/adobe/xmp-docs/tree/master
+            for more information on XMP metadata and expected types.
         """
         if group == XMP:
             self._metadata_ref = metadata_ref_set_tag_with_path(

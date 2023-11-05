@@ -8,23 +8,65 @@ Video formats are not currently supported.
 
 ## Synopsis
 
+<!--
+Setup for doctest:
+
 ```pycon
->>> from cgmetadata import ImageMetadata
->>> md = ImageMetadata("tests/data/test.heic")
+>>> import shutil
+>>> import os
+>>> try:
+...     os.remove("test.jpeg")
+... except Exception:
+...     pass
+...
+>>> try:
+...     os.remove("test.xmp")
+... except Exception:
+...     pass
+...
+>>>  
+>>> cwd = os.getcwd()
+>>> _ = shutil.copy("tests/data/test.jpeg", os.path.join(cwd, "test.jpeg"))
+>>> 
+```
+-->
+
+```pycon
+>>> from cgmetadata import ImageMetadata, IPTC, XMP
+>>> md = ImageMetadata("test.jpeg")
 >>> md.exif["LensMake"]
 'Apple'
 >>> md.iptc["Keywords"]
 (
-    flower,
-    plant,
-    farm
+    fruit,
+    tree
 )
 >>> md.xmp["dc:description"]
-['A sunflower plant']
+['A pair of pears on a tree']
+>>> # get XMP sidecar as a str
+>>> xmp = md.xmp_dumps()
 >>> # write an XMP sidecar file for the image
 >>> with open("test.xmp", "w") as f:
 ...     md.xmp_dump(f)
 ...
+>>> # read metadata from  XMP sidecar file and apply to image
+>>> with open("test.xmp", "r") as f:
+...     md.xmp_load(f)
+...
+>>> 
+>>> md.write()
+>>> # set metadata
+>>> md.set(XMP, "dc:description", ["Test image"])
+>>> md.set(IPTC, "Keywords", ["foo", "bar"])
+>>> md.write()
+>>> md.xmp["dc:description"]
+['Test image']
+>>> md.iptc["Keywords"]
+(
+    foo,
+    bar
+)
+>>> 
 ```
 
 ## Installation
@@ -33,22 +75,14 @@ Video formats are not currently supported.
 pip install cgmetadata
 ```
 
-## Usage
+## Documentation
 
-```python
-...
-```
+The documentation for CGMetadata is available at [https://RhetTbull.github.io/CGMetadata/](https://RhetTbull.github.io/CGMetadata/).
 
 ## CLI
 
 ```bash
-...
-```
-
-## API Reference
-
-```python
-...
+... not yet implemented ...
 ```
 
 ## Supported Versions
@@ -58,3 +92,14 @@ CGMetadata has been tested on macOS 13 (Ventura) but should work on macOS 11 (Bi
 ## License
 
 MIT License, copyright Rhet Turnbull, 2023.
+
+<!--
+Cleanup for doctest:
+
+```pycon
+>>> import os
+>>> os.remove("test.jpeg")
+>>> os.remove("test.xmp")
+>>> 
+```
+-->
