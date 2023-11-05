@@ -14,7 +14,9 @@ This project uses [Flit](https://flit.readthedocs.io/en/latest/).  It is a simpl
 
 ## Testing
 
-- `pytest`
+Testing uses pytest. Use --doctest-glob to include the README.md file.
+
+- `pytest --doctest-glob="*.md"`
 
 ## Building
 
@@ -23,3 +25,12 @@ This project uses [Flit](https://flit.readthedocs.io/en/latest/).  It is a simpl
 ## Publishing
 
 - `flit publish`
+
+## Documentation
+
+Docs are built and deployed with mkdocs:
+
+- `mkdocs builds`
+- `mkdocs gh-deploy`
+
+Use `mkdocs serve` to test locally.
