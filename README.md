@@ -67,6 +67,17 @@ Setup for doctest:
     bar
 )
 >>> 
+>>> # update values with context manager
+>>> with ImageMetadata("test.jpeg") as md:
+...     md.set(IPTC, "Keywords", ["Fizz", "Buzz"])
+...     md.set(XMP, "dc:creator", ["CGMetadata"])
+...
+>>> md.iptc["Keywords"]
+(
+    Fizz,
+    Buzz
+)
+>>> 
 ```
 
 ## Installation
