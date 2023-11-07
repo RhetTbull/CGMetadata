@@ -892,8 +892,7 @@
 <span class="normal">261</span>
 <span class="normal">262</span>
 <span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ImageMetadata</span><span class="p">:</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ImageMetadata</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and write image metadata properties using native macOS APIs.</span>
 
 <span class="sd">    Args:</span>
@@ -998,7 +997,6 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            xmp: The XMP metadata as a string.</span>
-<span class="sd">            fix_quotes: If True, replace single quotes with double quotes.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            This does not write the metadata to the image file.</span>
@@ -1300,10 +1298,10 @@ for more information.</p>
 
           <details class="quote">
             <summary>Source code in <code>cgmetadata/classes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
+<span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Enter the context manager.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_context_manager</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">return</span> <span class="bp">self</span>
@@ -1331,12 +1329,12 @@ for more information.</p>
 
           <details class="quote">
             <summary>Source code in <code>cgmetadata/classes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">253</span>
+<span class="normal">254</span>
 <span class="normal">255</span>
 <span class="normal">256</span>
 <span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+<span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exit the context manager.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_manager</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
@@ -1366,11 +1364,11 @@ for more information.</p>
 
           <details class="quote">
             <summary>Source code in <code>cgmetadata/classes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
+<span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the metadata as a dictionary.&quot;&quot;&quot;</span>
     <span class="n">dict_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">dict_data</span><span class="p">[</span><span class="n">XMP</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xmp</span>
@@ -1399,9 +1397,9 @@ for more information.</p>
 
           <details class="quote">
             <summary>Source code in <code>cgmetadata/classes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">reload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">reload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reload the metadata from the image file.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_load</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -1500,7 +1498,8 @@ for more information on XMP metadata and expected types.</p>
 </details>
           <details class="quote">
             <summary>Source code in <code>cgmetadata/classes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">166</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
+<span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
@@ -1532,8 +1531,7 @@ for more information on XMP metadata and expected types.</p>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set</span><span class="p">(</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">set</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">group</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;EXIF&quot;</span><span class="p">,</span> <span class="s2">&quot;IPTC&quot;</span><span class="p">,</span> <span class="s2">&quot;TIFF&quot;</span><span class="p">,</span> <span class="s2">&quot;GPS&quot;</span><span class="p">,</span> <span class="s2">&quot;XMP&quot;</span><span class="p">],</span>
     <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1591,10 +1589,10 @@ for more information on XMP metadata and expected types.</p>
 
           <details class="quote">
             <summary>Source code in <code>cgmetadata/classes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
+<span class="normal">201</span>
 <span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write the metadata to the image file then reloads the metadata from the image.&quot;&quot;&quot;</span>
     <span class="n">metadata_ref_write_to_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_ref</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">reload</span><span class="p">()</span>
@@ -1854,7 +1852,8 @@ This function replaces single quotes with double quotes to avoid this issue.</p>
 </details>
           <details class="quote">
             <summary>Source code in <code>cgmetadata/classes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
+<span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
@@ -1869,8 +1868,7 @@ This function replaces single quotes with double quotes to avoid this issue.</p>
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">xmp_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">:</span> <span class="n">IO</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">xmp_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">:</span> <span class="n">IO</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load XMP metadata from a file.</span>
 
 <span class="sd">    Args:</span>
@@ -1936,19 +1934,6 @@ This function replaces single quotes with double quotes to avoid this issue.</p>
               <em>required</em>
           </td>
         </tr>
-        <tr>
-          <td><code>fix_quotes</code></td>
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>If True, replace single quotes with double quotes.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
     </tbody>
   </table>
 
@@ -1979,13 +1964,11 @@ This function replaces single quotes with double quotes to avoid this issue.</p>
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">xmp_loads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xmp</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">xmp_loads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xmp</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load XMP metadata from a string.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        xmp: The XMP metadata as a string.</span>
-<span class="sd">        fix_quotes: If True, replace single quotes with double quotes.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        This does not write the metadata to the image file.</span>
