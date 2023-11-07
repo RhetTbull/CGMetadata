@@ -77,6 +77,7 @@ def main():
 
     # default output
     print_md_dict(dict_data, args.image)
+    sys.exit(0)  # always raise SystemExit for testing
 
 
 def md_dict_to_json(md_dict: dict[str, Any], indent: int = 4) -> str:
