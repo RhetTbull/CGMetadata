@@ -39,10 +39,7 @@ Setup for doctest:
 >>> md.exif["LensMake"]
 'Apple'
 >>> md.iptc["Keywords"]
-(
-    fruit,
-    tree
-)
+['fruit', 'tree']
 >>> md.xmp["dc:description"]
 ['A pair of pears on a tree']
 >>> # get XMP sidecar as a str
@@ -64,10 +61,7 @@ Setup for doctest:
 >>> md.xmp["dc:description"]
 ['Test image']
 >>> md.iptc["Keywords"]
-(
-    foo,
-    bar
-)
+['foo', 'bar']
 >>> 
 >>> # update values with context manager
 >>> with ImageMetadata("test.jpeg") as md:
@@ -75,10 +69,7 @@ Setup for doctest:
 ...     md.set(XMP, "dc:creator", ["CGMetadata"])
 ...
 >>> md.iptc["Keywords"]
-(
-    Fizz,
-    Buzz
-)
+['Fizz', 'Buzz']
 >>> 
 ```
 
