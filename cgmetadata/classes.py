@@ -132,7 +132,6 @@ class ImageMetadata:
 
         Args:
             xmp: The XMP metadata as a string.
-            fix_quotes: If True, replace single quotes with double quotes.
 
         Note:
             This does not write the metadata to the image file.
