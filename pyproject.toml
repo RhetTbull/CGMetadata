@@ -16,6 +16,7 @@ dependencies = [
     "pyobjc-framework-CoreLocation>=9.2",
     "pyobjc-framework-Quartz>=9.2",
     "pyobjc-framework-UniformTypeIdentifiers>=9.2",
+    "rich>=13.0.0",
     "wheel>=0.41.2",
     "wurlitzer>=3.0.3",
 ]
@@ -33,6 +34,8 @@ docs = [
     "mkdocstrings-python>=0.8.3",
 ]
 
+[project.scripts]
+cgmd = "cgmetadata.cli:main"
 
 [tool.flit.sdist]
 exclude = ["site/**/*", "tests/**/*"]

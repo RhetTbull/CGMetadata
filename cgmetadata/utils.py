@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 import AppKit
 import objc
 import UniformTypeIdentifiers
-from Foundation import NSURL
+from Foundation import NSURL, CFArrayRef, CFDataRef, CFDictionaryRef
 
 from .types import FilePath
 
@@ -73,3 +74,37 @@ def strip_xmp_packet(xmp: str) -> str:
     xmp = re.sub(footer_pattern, "", xmp)
 
     return xmp.strip()
+
+
+def cftype_to_pytype(value: Any) -> Any:
+    """Convert a Core Foundation type to a python type
+    This doesn't cover every type but covers types I've seen in metadata
+    """
+    if isinstance(value, NSURL):
+        value = str(value.path())
+    elif isinstance(value, objc.pyobjc_unicode):
+        value = str(value)
+    elif isinstance(value, CFDataRef):
+        value = bytes(value)
+    elif isinstance(value, objc._pythonify.OC_PythonLong):
+        value = int(value)
+    elif isinstance(value, objc._pythonify.OC_PythonFloat):
+        value = float(value)
+    elif isinstance(value, list):
+        value = list(cftype_to_pytype(v) for v in value)
+    return value
+
+
+def CFDictionary_to_dict(cf_dict: CFDictionaryRef) -> dict:
+    """Recursively convert a CFDictionary to a dict, converting any objective C types to python equivalent."""
+    if cf_dict is None:
+        return None
+    d = {}
+    for key, value in cf_dict.items():
+        if isinstance(value, CFDictionaryRef):
+            d[key] = CFDictionary_to_dict(value)
+        else:
+            if isinstance(value, CFArrayRef):
+                value = list(cftype_to_pytype(v) for v in value)
+            d[key] = cftype_to_pytype(value)
+    return d

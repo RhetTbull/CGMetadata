@@ -1,5 +1,6 @@
 """Classes for CGMetadata"""
 
+import json
 import pathlib
 from typing import IO, Any, Literal
 
@@ -18,7 +19,12 @@ from .cgmetadata import (
 )
 from .constants import EXIF, GPS, IPTC, TIFF, XMP, XMP_PACKET_FOOTER, XMP_PACKET_HEADER
 from .types import FilePath
-from .utils import is_image, single_quotes_to_double_quotes, strip_xmp_packet
+from .utils import (
+    CFDictionary_to_dict,
+    is_image,
+    single_quotes_to_double_quotes,
+    strip_xmp_packet,
+)
 
 
 class ImageMetadata:
@@ -42,7 +48,7 @@ class ImageMetadata:
         self._load()
 
     @property
-    def properties(self):
+    def properties(self) -> dict[str, Any]:
         """Return the metadata properties dictionary from the image.
 
         The dictionary keys are named 'IPTC', 'EXIF', etc.
@@ -56,9 +62,10 @@ class ImageMetadata:
         # change keys to remove the leading '{' and trailing '}'
         # e.g. '{IPTC}' -> 'IPTC' but only if the key starts with '{'
         # also change Exif -> EXIF, WebP -> WEBP to match the other keys
+        properties = CFDictionary_to_dict(self._properties)
         properties = {
             key[1:-1] if key.startswith("{") else key: value
-            for key, value in self._properties.items()
+            for key, value in properties.items()
         }
         if "Exif" in properties:
             properties["EXIF"] = properties.pop("Exif")
@@ -67,27 +74,27 @@ class ImageMetadata:
         return properties
 
     @property
-    def exif(self):
+    def exif(self) -> dict[str, Any]:
         """Return the EXIF properties dictionary from the image."""
         return self.properties.get(EXIF, {})
 
     @property
-    def iptc(self):
+    def iptc(self) -> dict[str, Any]:
         """Return the IPTC properties dictionary from the image."""
         return self.properties.get(IPTC, {})
 
     @property
-    def tiff(self):
+    def tiff(self) -> dict[str, Any]:
         """Return the TIFF properties dictionary from the image."""
         return self.properties.get(TIFF, {})
 
     @property
-    def gps(self):
+    def gps(self) -> dict[str, Any]:
         """Return the GPS properties dictionary from the image."""
         return self.properties.get(GPS, {})
 
     @property
-    def xmp(self):
+    def xmp(self) -> dict[str, Any]:
         """Return the XMP metadata dictionary for the image.
 
         The dictionary keys are in form "prefix:name", e.g. "dc:creator".
@@ -202,7 +209,7 @@ class ImageMetadata:
 
     def asdict(self) -> dict[str, Any]:
         """Return the metadata as a dictionary."""
-        dict_data = self.properties
+        dict_data = self.properties.copy()
         dict_data[XMP] = self.xmp
         return dict_data
 
