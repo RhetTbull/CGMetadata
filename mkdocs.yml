@@ -3,6 +3,7 @@ site_url: https://rhettbull.github.io/CGMetadata/
 nav:
     - Home: index.md
     - Reference: reference.md
+    - Command Line Interface: cli.md
 plugins:
     - search
     - mkdocstrings
