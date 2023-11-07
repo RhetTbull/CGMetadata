@@ -20,6 +20,7 @@ Testing uses pytest. Use --doctest-glob to include the README.md file.
 
 ## Building
 
+- `rm -rf dist && rm -rf build`
 - `flit build`
 
 ## Publishing
@@ -30,7 +31,7 @@ Testing uses pytest. Use --doctest-glob to include the README.md file.
 
 Docs are built and deployed with mkdocs:
 
-- `mkdocs builds`
+- `mkdocs build`
 - `mkdocs gh-deploy`
 
 Use `mkdocs serve` to test locally.
