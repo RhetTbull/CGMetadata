@@ -31,18 +31,36 @@ def main():
         "--csv",
         "-c",
         action="store_true",
-        help="output as comma separated values (CSV)",
+        help="output as comma separated values (CSV); see also --no-header",
     )
     arg_parser.add_argument(
-        "--tsv", "-t", action="store_true", help="output as tab separated values (TSV)"
+        "--tsv",
+        "-t",
+        action="store_true",
+        help="output as tab separated values (TSV); see also --no-header",
     )
-    arg_parser.add_argument("--json", "-j", action="store_true", help="output as JSON")
+    arg_parser.add_argument(
+        "--json", "-j", action="store_true", help="output as JSON; see also --indent"
+    )
+    arg_parser.add_argument(
+        "--xmp",
+        "-x",
+        action="store_true",
+        help="output XMP sidecar for image; see also --no-header",
+    )
     arg_parser.add_argument(
         "--indent",
         "-i",
         type=int,
         help="indent level for JSON; default 4, use 0 for no indentation",
         default=4,
+    )
+    arg_parser.add_argument(
+        "--no-header",
+        "-H",
+        action="store_true",
+        help="when used with --csv, --tsv, omit column headers; "
+        "when used with --xmp, omit XMP packet header",
     )
     args = arg_parser.parse_args()
 
@@ -53,8 +71,10 @@ def main():
     if not is_image(args.image):
         print(f"Not an image file: {args.image}", file=sys.stderr)
         sys.exit(1)
-    if sum([args.csv, args.tsv, args.json]) > 1:
-        print("Only one of --csv, --tsv, --json can be specified", file=sys.stderr)
+    if sum([args.csv, args.tsv, args.json, args.xmp]) > 1:
+        print(
+            "Only one of --csv, --tsv, --json, --xmp can be specified", file=sys.stderr
+        )
         sys.exit(1)
 
     # load metadata and print in the appropriate format
@@ -68,11 +88,15 @@ def main():
         sys.exit(0)
 
     if args.csv:
-        print_csv(dict_data)
+        print_csv(dict_data, header=not args.no_header)
         sys.exit(0)
 
     if args.tsv:
-        print_csv(dict_data, delim="\t")
+        print_csv(dict_data, delim="\t", header=not args.no_header)
+        sys.exit(0)
+
+    if args.xmp:
+        print(md.xmp_dumps(header=not args.no_header))
         sys.exit(0)
 
     # default output
@@ -150,8 +174,14 @@ def print_md_dict(md_dict: dict[str, Any], filename: str):
     console.print(table)
 
 
-def print_csv(md_dict: dict[str, Any], delim: str = ","):
-    """Print metadata dictionary as CSV."""
+def print_csv(md_dict: dict[str, Any], delim: str = ",", header: bool = True):
+    """Print metadata dictionary as CSV.
+
+    Args:
+        md_dict: metadata dictionary
+        delim: delimiter to use
+        header: if True, print header row
+    """
 
     items = sorted(flatten_metadata_dict(md_dict))
     items_to_print = []
@@ -160,7 +190,8 @@ def print_csv(md_dict: dict[str, Any], delim: str = ","):
         items_to_print.append((group, tag, format_value(value)))
 
     csv_writer = csv.writer(sys.stdout, delimiter=delim)
-    csv_writer.writerow(["Group", "Tag", "Value"])
+    if header:
+        csv_writer.writerow(["Group", "Tag", "Value"])
     csv_writer.writerows(items_to_print)
 
 

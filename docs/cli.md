@@ -1,10 +1,11 @@
 # Command Line Interface
 
 The package will install a small command line utility, `cgmd`, which prints
-metadata for an image file in tabular, JSON, CSV, or TSV formats.
+metadata for an image file in tabular, JSON, CSV, TSV, or XMP formats.
+The CLI can also be used by executing `python3 -m cgmetadata`.
 
 ```
-usage: cgmd [-h] [--version] [--csv] [--tsv] [--json] [--indent INDENT] IMAGE
+usage: cgmd [-h] [--version] [--csv] [--tsv] [--json] [--xmp] [--indent INDENT] [--no-header] IMAGE
 
 Print metadata for image files in various formats.
 
@@ -14,9 +15,11 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --version, -v         show program's version number and exit
-  --csv, -c             output as comma separated values (CSV)
-  --tsv, -t             output as tab separated values (TSV)
-  --json, -j            output as JSON
+  --csv, -c             output as comma separated values (CSV); see also --no-header
+  --tsv, -t             output as tab separated values (TSV); see also --no-header
+  --json, -j            output as JSON; see also --indent
+  --xmp, -x             output XMP sidecar for image; see also --no-header
   --indent INDENT, -i INDENT
                         indent level for JSON; default 4, use 0 for no indentation
+  --no-header, -H       when used with --csv, --tsv, omit column headers; when used with --xmp, omit XMP packet header
 ```
