@@ -83,6 +83,34 @@ Setup for doctest:
 >>> 
 ```
 
+CGMetadata also include a utility function for reading an XMP file and returning a dictionary of metadata using native macOS APIs. This may be useful by itself as it doesn't require the use of external libraries or XML parsers.
+
+<!--
+Setup for doctest:
+
+```pycon
+>>> import shutil
+>>> import os
+>>> try:
+...     os.remove("test.xmp")
+... except Exception:
+...     pass
+...
+>>>  
+>>> cwd = os.getcwd()
+>>> _ = shutil.copy("tests/data/test.MOV.xmp", os.path.join(cwd, "test.xmp"))
+>>> 
+```
+-->
+
+```pycon
+>>> from cgmetadata import metadata_dictionary_from_xmp_packet
+>>> xmp_data = open("test.xmp").read()
+>>> metadata_dictionary_from_xmp_packet(xmp_data)
+{'dc:subject': ['Coffee', 'Espresso'], 'iio:hasXMP': 'True'}
+>>>
+```
+
 ## Installation
 
 ```bash

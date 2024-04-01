@@ -19,9 +19,9 @@ from .utils import is_image, is_video
 
 
 def main():
-    """Print metadata for image files."""
+    """Print metadata for image and video files."""
     arg_parser = argparse.ArgumentParser(
-        description="Print metadata for image files in various formats."
+        description="Print metadata for image and video files in various formats."
     )
     arg_parser.add_argument(
         "image", metavar="IMAGE_OR_VIDEO", help="path to image or video file"

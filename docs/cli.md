@@ -5,12 +5,12 @@ metadata for an image file in tabular, JSON, CSV, TSV, or XMP formats.
 The CLI can also be used by executing `python3 -m cgmetadata`.
 
 ```
-usage: cgmd [-h] [--version] [--csv] [--tsv] [--json] [--xmp] [--indent INDENT] [--no-header] IMAGE
+usage: cgmd [-h] [--version] [--csv] [--tsv] [--json] [--xmp] [--indent INDENT] [--no-header] IMAGE_OR_VIDEO
 
-Print metadata for image files in various formats.
+Print metadata for image and video files in various formats.
 
 positional arguments:
-  IMAGE                 path to image file
+  IMAGE_OR_VIDEO        path to image or video file
 
 options:
   -h, --help            show this help message and exit

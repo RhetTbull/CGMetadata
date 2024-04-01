@@ -36,10 +36,10 @@ def metadata_dictionary_from_xmp_packet(
     Args:
         xmp: str or bytes for XMP packet
 
-    Returns: dict with key/value pairs from the XMP packet
+    Returns: dict with key/value pairs from the XMP packet.
 
     Raises:
-        ValueError if XMP packet cannot be decoded
+        ValueError: if XMP packet cannot be decoded.
     """
     with objc.autorelease_pool():
         if isinstance(xmp, (bytes, __NSCFData)):
