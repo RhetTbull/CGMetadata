@@ -8,6 +8,7 @@ import objc
 import Quartz
 from Foundation import NSData, __NSCFData
 
+from .constants import XMP_PACKET_FOOTER, XMP_PACKET_HEADER
 from .metadata import MetadataError, metadata_dictionary_from_image_metadata_ref
 from .utils import single_quotes_to_double_quotes, strip_xmp_packet
 

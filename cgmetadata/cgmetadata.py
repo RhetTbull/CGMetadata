@@ -208,6 +208,40 @@ def load_video_metadata(video_path: FilePath) -> dict[str, Any]:
         return metadata_dictionary
 
 
+def load_video_xmp(video_path: FilePath) -> str | None:
+    """Load XMP metadata packet from a video file using AVFoundation.
+
+    Args:
+        video_path: Path to a video file.
+
+    Returns: str containing the XMP metadata packet.
+    """
+    with objc.autorelease_pool():
+        video_path = str(video_path)
+        video_url = NSURL.fileURLWithPath_(video_path)
+        asset = AVURLAsset.URLAssetWithURL_options_(video_url, None)
+
+        metadata_formats = asset.availableMetadataFormats()
+
+        for format in metadata_formats:
+            metadata_items = asset.metadataForFormat_(format)
+
+            for item in metadata_items:
+                namespace = str(item.keySpace()) if item.keySpace() else ""
+                if key := item.commonKey():
+                    key = str(key)
+                    key = key[0].upper() + key[1:] if len(key) > 1 else key.upper()
+                else:
+                    key = ""  # I've seen null key
+                value = item.value()
+                if value is not None:
+                    if namespace == UDTA and not key:
+                        # user data, possibly an XMP packet
+                        if is_xmp_packet(value):
+                            return value.decode("utf-8")
+    return None
+
+
 # def load_image_auxilary_data(image_path: FilePath) -> CFDictionaryRef:
 #     """Return the auxiliary data dictionary from the image at the given path."""
 #     with objc.autorelease_pool():

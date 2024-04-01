@@ -7,6 +7,7 @@ from .cgmetadata import (
     load_image_metadata_ref,
     load_image_properties,
     load_video_metadata,
+    load_video_xmp,
 )
 from .constants import (
     EXIF,
@@ -327,9 +328,9 @@ class VideoMetadata:
         Returns:
             The serialized XMP metadata for the image as a string.
         """
-        xmp = self.xmp
-        if header:
-            xmp = f"{XMP_PACKET_HEADER}\n{xmp}\n{XMP_PACKET_FOOTER}"
+        xmp = self._xmp
+        if not header:
+            xmp = strip_xmp_packet(xmp)
         return xmp
 
     def xmp_dump(self, fp: IO[str], header: bool = True):
@@ -339,9 +340,8 @@ class VideoMetadata:
             fp: The file pointer to write the XMP metadata to.
             header: If True, include the XMP packet header in the serialized XMP.
         """
-        xmp = self.xmp
-        if header:
-            xmp = XMP_PACKET_HEADER + xmp + XMP_PACKET_FOOTER
+        xmp = self.xmp_dumps(header)
+        xmp = xmp.encode("utf-8")
         fp.write(xmp)
 
     def reload(self):
@@ -359,6 +359,7 @@ class VideoMetadata:
         except AttributeError:
             pass
         self._properties = load_video_metadata(self.filepath)
+        self._xmp = load_video_xmp(self.filepath)
 
 
 class VideoMetaData(VideoMetadata):
