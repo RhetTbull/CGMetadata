@@ -1,30 +1,40 @@
 """Classes for CGMetadata"""
 
-import json
 import pathlib
 from typing import IO, Any, Literal
-
-import Quartz
 
 from .cgmetadata import (
     load_image_metadata_ref,
     load_image_properties,
+    load_video_metadata,
+    load_video_xmp,
+)
+from .constants import (
+    EXIF,
+    GPS,
+    IPTC,
+    TIFF,
+    UDTA,
+    XMP,
+    XMP_PACKET_FOOTER,
+    XMP_PACKET_HEADER,
+)
+from .metadata import (
     metadata_dictionary_from_image_metadata_ref,
-    metadata_ref_create_from_xmp,
     metadata_ref_create_mutable_copy,
-    metadata_ref_serialize_xmp,
     metadata_ref_set_tag_for_dict,
     metadata_ref_set_tag_with_path,
     metadata_ref_write_to_file,
 )
-from .constants import EXIF, GPS, IPTC, TIFF, XMP, XMP_PACKET_FOOTER, XMP_PACKET_HEADER
 from .types import FilePath
 from .utils import (
     CFDictionary_to_dict,
     is_image,
+    is_video,
     single_quotes_to_double_quotes,
     strip_xmp_packet,
 )
+from .xmp import metadata_ref_create_from_xmp, metadata_ref_serialize_xmp
 
 
 class ImageMetadata:
@@ -262,6 +272,100 @@ class ImageMetadata:
             del self._metadata_ref
         if self._properties is not None:
             del self._properties
+
+
+class ImageMetaData(ImageMetadata):
+    """Alias for ImageMetadata."""
+
+    pass
+
+
+class VideoMetadata:
+    """Read video metadata properties using native macOS APIs.
+
+    Args:
+        filepath: The path to the video file.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ValueError: If the file is not an video file.
+
+    Note: Unlike ImageMetadata, this class does not provide write access to the metadata.
+    """
+
+    def __init__(self, filepath: FilePath):
+        self.filepath = pathlib.Path(filepath).resolve()
+        if not self.filepath.exists():
+            raise FileNotFoundError(f"File not found: {self.filepath}")
+        if not is_video(self.filepath):
+            raise ValueError(f"Not a video file: {self.filepath}")
+        self._context_manager = False
+        self._load()
+
+    @property
+    def properties(self) -> dict[str, Any]:
+        """Return the metadata properties dictionary from the image.
+
+        The dictionary keys are named with the namespace, such as 'mdta', 'udta'.
+        Some of the values are themselves dictionaries.
+        """
+        return self._properties
+
+    @property
+    def xmp(self) -> dict[str, Any]:
+        """Return the XMP metadata dictionary for the image.
+
+        The dictionary keys are in form "prefix:name", e.g. "dc:creator".
+        """
+        return self._properties.get(XMP, {})
+
+    def xmp_dumps(self, header: bool = True) -> str:
+        """Return the serialized XMP metadata for the video.
+
+        Args:
+            header: If True, include the XMP packet header in the serialized XMP.
+
+        Returns:
+            The serialized XMP metadata for the image as a string.
+        """
+        xmp = self._xmp
+        if not header:
+            xmp = strip_xmp_packet(xmp)
+        return xmp
+
+    def xmp_dump(self, fp: IO[str], header: bool = True):
+        """Write the serialized XMP metadata for the video to a file.
+
+        Args:
+            fp: The file pointer to write the XMP metadata to.
+            header: If True, include the XMP packet header in the serialized XMP.
+        """
+        xmp = self.xmp_dumps(header)
+        xmp = xmp.encode("utf-8")
+        fp.write(xmp)
+
+    def reload(self):
+        """Reload the metadata from the image file."""
+        self._load()
+
+    def asdict(self) -> dict[str, Any]:
+        """Return the metadata as a dictionary."""
+        dict_data = self._properties.copy()
+        return dict_data
+
+    def _load(self):
+        try:
+            del self._properties
+        except AttributeError:
+            pass
+        self._properties = load_video_metadata(self.filepath)
+        self._xmp = load_video_xmp(self.filepath)
+
+
+class VideoMetaData(VideoMetadata):
+    """Alias for VideoMetadata."""
+
+    pass
 
 
 # class XMPMetadata:

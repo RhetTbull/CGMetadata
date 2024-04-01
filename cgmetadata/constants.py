@@ -11,3 +11,7 @@ IPTC = "IPTC"
 TIFF = "TIFF"
 GPS = "GPS"
 WEBP = "WEBP"
+
+# Metadata namespaces
+MDTA = "mdta"
+UDTA = "udta"
