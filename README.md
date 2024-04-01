@@ -2,11 +2,9 @@
 
 Read and write image metadata on macOS from Python using the native [ImageIO / Core Graphics frameworks](https://developer.apple.com/documentation/imageio).
 
-CGMetadata is a Python wrapper around the macOS ImageIO and Core Graphics frameworks. It provides a simple interface for reading and writing image metadata, including EXIF, IPTC, and XMP data. Reading is supported for all image formats supported by ImageIO.
+CGMetadata is a Python wrapper around the macOS ImageIO and Core Graphics frameworks. It provides a simple interface for reading and writing image metadata, including EXIF, IPTC, and XMP data. Reading is supported for all image formats supported by ImageIO. Reading is also supported for video formats using AVFoundation.
 
-Writing is not currently supported for RAW file formats.  Writing of metadata has been tested on JPEG, PNG, TIFF, and HEIC files however it should be considered experimental. If you are using CGMetadata to write metadata to image files, please make sure you have tested the results before using it in production.
-
-Video formats are not currently supported.
+Writing is not currently supported for RAW file formats nor for video formats.  Writing of metadata has been tested on JPEG, PNG, TIFF, and HEIC files however it should be considered experimental. If you are using CGMetadata to write metadata to image files, please make sure you have tested the results before using it in production.
 
 ## Synopsis
 
@@ -26,15 +24,22 @@ Setup for doctest:
 ... except Exception:
 ...     pass
 ...
+>>> try:
+...     os.remove("test.MOV")
+... except Exception:
+...     pass
+...
 >>>  
 >>> cwd = os.getcwd()
 >>> _ = shutil.copy("tests/data/test.jpeg", os.path.join(cwd, "test.jpeg"))
+>>> 
+>>> _ = shutil.copy("tests/data/test.MOV", os.path.join(cwd, "test.MOV"))
 >>> 
 ```
 -->
 
 ```pycon
->>> from cgmetadata import ImageMetadata, IPTC, XMP
+>>> from cgmetadata import ImageMetadata, VideoMetadata, IPTC, XMP
 >>> md = ImageMetadata("test.jpeg")
 >>> md.exif["LensMake"]
 'Apple'
@@ -71,6 +76,11 @@ Setup for doctest:
 >>> md.iptc["Keywords"]
 ['Fizz', 'Buzz']
 >>> 
+>>> # read metadata from video file
+>>> md = VideoMetadata("test.MOV")
+>>> md.xmp.get("dc:subject")
+['Coffee', 'Espresso']
+>>> 
 ```
 
 ## Installation
@@ -94,12 +104,12 @@ metadata for an image file in tabular, JSON, CSV, TSV, or XMP formats. The CLI c
 be run by executing `python3 -m cgmetadata`.
 
 ```
-usage: cgmd [-h] [--version] [--csv] [--tsv] [--json] [--xmp] [--indent INDENT] [--no-header] IMAGE
+usage: cgmd [-h] [--version] [--csv] [--tsv] [--json] [--xmp] [--indent INDENT] [--no-header] IMAGE_OR_VIDEO
 
 Print metadata for image files in various formats.
 
 positional arguments:
-  IMAGE                 path to image file
+  IMAGE_OR_VIDEO        path to image or video file
 
 options:
   -h, --help            show this help message and exit
@@ -128,6 +138,7 @@ Cleanup for doctest:
 >>> import os
 >>> os.remove("test.jpeg")
 >>> os.remove("test.xmp")
+>>> os.remove("test.MOV")
 >>> 
 ```
 -->

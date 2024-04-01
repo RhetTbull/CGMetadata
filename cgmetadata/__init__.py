@@ -12,6 +12,7 @@ __all__ = [
     "ImageMetadata",
     "ImageMetaData",
     "IPTC",
+    "is_xmp_packet",
     "MDTA",
     "metadata_dictionary_from_xmp_packet",
     "MetadataError",
