@@ -11,7 +11,7 @@ def parse_iso_6709(iso_6709_str: str) -> tuple[float, float, float | None, str |
     - The first component is latitude with a sign (+ or -).
     - The second component is longitude with a sign (+ or -).
     - The third component is height with a sign (+ or -).
-    - The Coordinated Reference System (CRS) is optional (e.g. CRSWGS_84); 
+    - The Coordinated Reference System (CRS) is optional (e.g. CRSWGS_84);
         this contravenes the specification but matches actual practice.
     - There may or may not be a trailing slash.
 

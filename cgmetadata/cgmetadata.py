@@ -179,7 +179,7 @@ def load_video_metadata(video_path: FilePath) -> dict[str, Any]:
                     key = str(key)
                     key = key[0].upper() + key[1:] if len(key) > 1 else key.upper()
                 else:
-                    key = "" # I've seen null key
+                    key = ""  # I've seen null key
                 value = item.value()
                 if namespace not in metadata_dictionary:
                     metadata_dictionary[namespace] = {}
