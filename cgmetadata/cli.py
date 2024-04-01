@@ -14,8 +14,8 @@ from rich.console import Console
 from rich.table import Table
 
 from ._version import __version__
-from .classes import ImageMetadata
-from .utils import is_image
+from .classes import ImageMetadata, VideoMetadata
+from .utils import is_image, is_video
 
 
 def main():
@@ -23,7 +23,9 @@ def main():
     arg_parser = argparse.ArgumentParser(
         description="Print metadata for image files in various formats."
     )
-    arg_parser.add_argument("image", metavar="IMAGE", help="path to image file")
+    arg_parser.add_argument(
+        "image", metavar="IMAGE_OR_VIDEO", help="path to image or video file"
+    )
     arg_parser.add_argument(
         "--version", "-v", action="version", version="%(prog)s " + __version__
     )
@@ -68,8 +70,8 @@ def main():
     if not pathlib.Path(args.image).exists():
         print(f"File not found: {args.image}", file=sys.stderr)
         sys.exit(1)
-    if not is_image(args.image):
-        print(f"Not an image file: {args.image}", file=sys.stderr)
+    if not (is_image(args.image) or is_video(args.image)):
+        print(f"Not an image or video file: {args.image}", file=sys.stderr)
         sys.exit(1)
     if sum([args.csv, args.tsv, args.json, args.xmp]) > 1:
         print(
@@ -78,7 +80,10 @@ def main():
         sys.exit(1)
 
     # load metadata and print in the appropriate format
-    md = ImageMetadata(args.image)
+    if is_image(args.image):
+        md = ImageMetadata(args.image)
+    else:
+        md = VideoMetadata(args.image)
     dict_data = md.asdict()
 
     if args.json:
