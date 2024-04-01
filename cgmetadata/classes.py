@@ -316,7 +316,7 @@ class VideoMetadata:
 
         The dictionary keys are in form "prefix:name", e.g. "dc:creator".
         """
-        return self._properties.get(UDTA, {}).get(XMP, {})
+        return self._properties.get(XMP, {})
 
     def xmp_dumps(self, header: bool = True) -> str:
         """Return the serialized XMP metadata for the video.
