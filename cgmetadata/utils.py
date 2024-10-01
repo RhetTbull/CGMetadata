@@ -8,10 +8,10 @@ from typing import Any
 import AppKit
 import objc
 from Foundation import NSURL, CFArrayRef, CFDataRef, CFDictionaryRef
+from utitools import conforms_to_uti, uti_for_path
 
 from .types import FilePath
 
-from utitools import conforms_to_uti, uti_for_path
 
 def is_image(filepath: FilePath) -> bool:
     """Return True if the file at `filepath` is an image file.
