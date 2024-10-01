@@ -7,11 +7,11 @@ from typing import Any
 
 import AppKit
 import objc
-import UniformTypeIdentifiers
 from Foundation import NSURL, CFArrayRef, CFDataRef, CFDictionaryRef
 
 from .types import FilePath
 
+from utitools import conforms_to_uti, uti_for_path
 
 def is_image(filepath: FilePath) -> bool:
     """Return True if the file at `filepath` is an image file.
@@ -25,7 +25,7 @@ def is_image(filepath: FilePath) -> bool:
     UTI is determined by the file extension.
     """
 
-    return _conforms_to_uti(filepath, "public.image")
+    return conforms_to_uti(uti_for_path(filepath), "public.image")
 
 
 def is_video(filepath: FilePath) -> bool:
@@ -40,23 +40,7 @@ def is_video(filepath: FilePath) -> bool:
     UTI is determined by the file extension.
     """
 
-    return _conforms_to_uti(filepath, "public.movie")
-
-
-def _conforms_to_uti(filepath: FilePath, uti: str) -> bool:
-    """Returns True if filepath confirms to a given UTI otherwise False"""
-    # Cycle through all types associated with file and check if any of them are the requested type
-    # There are several APIs that would have made this easier but Apple has deprecated them all
-    with objc.autorelease_pool():
-        url = NSURL.fileURLWithPath_(str(filepath))
-        provider = AppKit.NSItemProvider.alloc().initWithContentsOfURL_(url)
-        registered_type_identifiers = provider.registeredTypeIdentifiers()
-        image_type = UniformTypeIdentifiers.UTType.typeWithIdentifier_(uti)
-        for type_id in registered_type_identifiers:
-            current_type = UniformTypeIdentifiers.UTType.typeWithIdentifier_(type_id)
-            if current_type.conformsToType_(image_type):
-                return True
-        return False
+    return conforms_to_uti(uti_for_path(filepath), "public.movie")
 
 
 def single_quotes_to_double_quotes(s: str) -> str:

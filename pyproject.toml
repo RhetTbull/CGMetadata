@@ -15,8 +15,8 @@ dependencies = [
     "pyobjc-framework-AVFoundation>=9.2",
     "pyobjc-framework-CoreLocation>=9.2",
     "pyobjc-framework-Quartz>=9.2",
-    "pyobjc-framework-UniformTypeIdentifiers>=9.2",
     "rich>=13.0.0",
+    "utitools>=0.1.2",
     "wheel>=0.41.2",
     "wurlitzer>=3.0.3",
 ]
